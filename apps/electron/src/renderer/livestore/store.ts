@@ -1,4 +1,5 @@
 import { makePersistedAdapter } from '@livestore/adapter-web'
+import LiveStoreSharedWorker from '@livestore/adapter-web/shared-worker?sharedworker'
 import { useStore } from '@livestore/react'
 import { SyncPayload, schema } from '@repo/schema'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
@@ -20,7 +21,7 @@ const storeId = getStoreId()
 const adapter = makePersistedAdapter({
   storage: { type: 'opfs' },
   worker: LiveStoreWorker,
-  // No SharedWorker in Electron - single window model
+  sharedWorker: LiveStoreSharedWorker,
 })
 
 export function useAppStore() {

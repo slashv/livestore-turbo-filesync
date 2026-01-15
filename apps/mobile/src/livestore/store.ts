@@ -3,11 +3,13 @@ import { nanoid } from '@livestore/livestore'
 import { useStore } from '@livestore/react'
 import { makeWsSync } from '@livestore/sync-cf/client'
 import { events, SyncPayload, schema, tables } from '@repo/schema'
+import Constants from 'expo-constants'
 import { unstable_batchedUpdates as batchUpdates } from 'react-native'
 
-// Get sync URL from environment or use default
-const syncUrl = process.env.EXPO_PUBLIC_LIVESTORE_SYNC_URL ?? 'http://localhost:8787/sync'
-const storeId = process.env.EXPO_PUBLIC_LIVESTORE_STORE_ID ?? 'mobile-store'
+// Get sync URL from Expo constants or use default
+const expoConfig = Constants.expoConfig?.extra ?? {}
+const syncUrl = (expoConfig.LIVESTORE_SYNC_URL as string) ?? 'http://localhost:8787/sync'
+const storeId = (expoConfig.LIVESTORE_STORE_ID as string) ?? 'mobile-store'
 
 const adapter = makePersistedAdapter({
   sync: { backend: makeWsSync({ url: syncUrl }) },
