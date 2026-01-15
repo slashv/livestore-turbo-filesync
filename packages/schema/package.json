@@ -13,9 +13,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@livestore/livestore": "0.4.0-dev.22",
-    "@livestore/peer-deps": "0.4.0-dev.22",
-    "effect": "^3.12.0"
+    "@livestore/livestore": "catalog:",
+    "@livestore/peer-deps": "catalog:",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",

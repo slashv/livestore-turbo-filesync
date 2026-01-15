@@ -12,7 +12,7 @@
     "db:migrate:prod": "wrangler d1 migrations apply livestore-auth --remote"
   },
   "dependencies": {
-    "@livestore/sync-cf": "0.4.0-dev.22",
+    "@livestore/sync-cf": "catalog:",
     "better-auth": "^1.2.0",
     "drizzle-orm": "^0.38.0",
     "hono": "^4.6.0"

@@ -14,13 +14,13 @@
   },
   "dependencies": {
     "@repo/schema": "workspace:*",
-    "effect": "^3.12.0"
+    "effect": "catalog:"
   },
   "peerDependencies": {
-    "@livestore/livestore": "0.4.0-dev.22"
+    "@livestore/livestore": "catalog:"
   },
   "devDependencies": {
-    "@livestore/livestore": "0.4.0-dev.22",
+    "@livestore/livestore": "catalog:",
     "@repo/tsconfig": "workspace:*",
     "typescript": "^5.7.2"
   }

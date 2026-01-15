@@ -4,6 +4,39 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@livestore/adapter-expo':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/adapter-web':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/devtools-expo':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/devtools-vite':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/livestore':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/peer-deps':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/react':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/sync-cf':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    '@livestore/wa-sqlite':
+      specifier: 0.4.0-dev.22
+      version: 0.4.0-dev.22
+    effect:
+      specifier: 3.19.12
+      version: 3.19.12
+
 importers:
 
   .:
@@ -21,22 +54,22 @@ importers:
   apps/electron:
     dependencies:
       '@livestore/adapter-web':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/livestore':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/peer-deps':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(@effect/workflow@0.15.2(@effect/experimental@0.57.11(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(@effect/platform@0.93.8(effect@3.19.12))(@effect/rpc@0.72.2(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(effect@3.19.12))(@opentelemetry/semantic-conventions@1.38.0)
       '@livestore/react':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(awqwycoi4lxbe2zt5il3ljmlq4)
       '@livestore/sync-cf':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(2iaeke36fl34rklr4cpdvialvi)
       '@livestore/wa-sqlite':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22
       '@repo/core':
         specifier: workspace:*
@@ -94,22 +127,22 @@ importers:
         specifier: ^14.0.0
         version: 14.1.0(expo-font@13.0.4(expo@52.0.48(@babel/core@7.28.6)(@babel/preset-env@7.28.6(@babel/core@7.28.6))(encoding@0.1.13)(react-native@0.76.5(@babel/core@7.28.6)(@babel/preset-env@7.28.6(@babel/core@7.28.6))(@types/react@18.3.27)(encoding@0.1.13)(react@18.3.1))(react@18.3.1))(react@18.3.1))(react-native@0.76.5(@babel/core@7.28.6)(@babel/preset-env@7.28.6(@babel/core@7.28.6))(@types/react@18.3.27)(encoding@0.1.13)(react@18.3.1))(react@18.3.1)
       '@livestore/adapter-expo':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(u4b6uscmfwcvuoho2gz7ldlv3e)
       '@livestore/devtools-expo':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(yzedashccnvdn3mglplkgqu5n4)
       '@livestore/livestore':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/peer-deps':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(@effect/workflow@0.15.2(@effect/experimental@0.57.11(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(@effect/platform@0.93.8(effect@3.19.12))(@effect/rpc@0.72.2(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(effect@3.19.12))(@opentelemetry/semantic-conventions@1.38.0)
       '@livestore/react':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(wemvyh7f2tbsayjp3peu6zpbbu)
       '@livestore/sync-cf':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(2iaeke36fl34rklr4cpdvialvi)
       '@repo/core':
         specifier: workspace:*
@@ -164,7 +197,7 @@ importers:
   apps/server:
     dependencies:
       '@livestore/sync-cf':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(2iaeke36fl34rklr4cpdvialvi)
       better-auth:
         specifier: ^1.2.0
@@ -195,22 +228,22 @@ importers:
   apps/web:
     dependencies:
       '@livestore/adapter-web':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/livestore':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/peer-deps':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(@effect/workflow@0.15.2(@effect/experimental@0.57.11(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(@effect/platform@0.93.8(effect@3.19.12))(@effect/rpc@0.72.2(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(effect@3.19.12))(@opentelemetry/semantic-conventions@1.38.0)
       '@livestore/react':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(awqwycoi4lxbe2zt5il3ljmlq4)
       '@livestore/sync-cf':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(2iaeke36fl34rklr4cpdvialvi)
       '@livestore/wa-sqlite':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22
       '@repo/core':
         specifier: workspace:*
@@ -229,7 +262,7 @@ importers:
         version: 19.2.3(react@19.2.3)
     devDependencies:
       '@livestore/devtools-vite':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(rav6kvth5k5hxdsbgncnhxbay4)
       '@repo/tsconfig':
         specifier: workspace:*
@@ -268,11 +301,11 @@ importers:
         specifier: workspace:*
         version: link:../schema
       effect:
-        specifier: ^3.12.0
+        specifier: 'catalog:'
         version: 3.19.12
     devDependencies:
       '@livestore/livestore':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@repo/tsconfig':
         specifier: workspace:*
@@ -284,13 +317,13 @@ importers:
   packages/schema:
     dependencies:
       '@livestore/livestore':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
       '@livestore/peer-deps':
-        specifier: 0.4.0-dev.22
+        specifier: 'catalog:'
         version: 0.4.0-dev.22(@effect/workflow@0.15.2(@effect/experimental@0.57.11(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(@effect/platform@0.93.8(effect@3.19.12))(@effect/rpc@0.72.2(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(effect@3.19.12))(@opentelemetry/semantic-conventions@1.38.0)
       effect:
-        specifier: ^3.12.0
+        specifier: 'catalog:'
         version: 3.19.12
     devDependencies:
       '@repo/tsconfig':

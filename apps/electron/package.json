@@ -11,14 +11,14 @@
     "package": "electron-builder"
   },
   "dependencies": {
-    "@livestore/adapter-web": "0.4.0-dev.22",
-    "@livestore/livestore": "0.4.0-dev.22",
-    "@livestore/peer-deps": "0.4.0-dev.22",
-    "@livestore/react": "0.4.0-dev.22",
-    "@livestore/sync-cf": "0.4.0-dev.22",
-    "@livestore/wa-sqlite": "0.4.0-dev.22",
-    "@repo/schema": "workspace:*",
+    "@livestore/adapter-web": "catalog:",
+    "@livestore/livestore": "catalog:",
+    "@livestore/peer-deps": "catalog:",
+    "@livestore/react": "catalog:",
+    "@livestore/sync-cf": "catalog:",
+    "@livestore/wa-sqlite": "catalog:",
     "@repo/core": "workspace:*",
+    "@repo/schema": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
