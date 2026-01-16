@@ -1,6 +1,6 @@
 # LiveStore Turborepo
 
-A cross platform app using LiveStore.
+A cross platform app using LiveStore that sync across web, desktop and mobile. Uses better-auth for authentication.
 
 ## Project Structure
 
