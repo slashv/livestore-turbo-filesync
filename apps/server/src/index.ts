@@ -69,7 +69,11 @@ app.post('/api/register', async (c) => {
   return c.json(result, result.success ? 201 : 409)
 })
 
-// Better-auth routes
+// Better-auth routes - handle OPTIONS for CORS preflight
+app.options('/api/auth/*', (c) => {
+  return new Response(null, { status: 204 })
+})
+
 app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
   try {
     const auth = createAuth(c.env)
@@ -81,7 +85,31 @@ app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
       body: c.req.raw.body,
       redirect: c.req.raw.redirect,
     })
-    return auth.handler(clonedRequest)
+    const response = await auth.handler(clonedRequest)
+
+    // Ensure CORS headers are present on the response
+    const origin = c.req.header('origin')
+    if (origin) {
+      const newHeaders = new Headers(response.headers)
+      if (!newHeaders.has('Access-Control-Allow-Origin')) {
+        // Check if origin is allowed
+        if (
+          origin.startsWith('http://localhost:') ||
+          origin.endsWith('.pages.dev') ||
+          origin === 'https://livestore-todo.pages.dev'
+        ) {
+          newHeaders.set('Access-Control-Allow-Origin', origin)
+          newHeaders.set('Access-Control-Allow-Credentials', 'true')
+        }
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders,
+      })
+    }
+
+    return response
   } catch (error) {
     console.error('Auth error:', error)
     return c.json({ error: String(error) }, 500)
