@@ -106,13 +106,17 @@ All apps share the same LiveStore schema from `@repo/schema`:
 
 ## Authentication
 
-The server includes [better-auth](https://better-auth.com) integration with email/password authentication. The auth token is passed to the sync backend via `syncPayload`.
+This project uses [better-auth](https://better-auth.com) for cookie-based authentication across all platforms:
 
-**Note**: The current setup uses an insecure placeholder token. For production:
+- **Web/Electron**: Cookies are sent automatically via browser headers
+- **Mobile (Expo)**: Cookies are stored securely via `@better-auth/expo` and passed in the sync payload
 
-1. Implement proper login UI
-2. Store the auth token securely
-3. Enable token validation in `apps/server/src/index.ts`
+Each user's data is isolated to their own store (`storeId === userId`).
+
+For more details, see:
+- [docs/authentication.md](./docs/authentication.md) - Implementation details
+- [LiveStore Auth Patterns](https://dev.docs.livestore.dev/patterns/auth/)
+- [better-auth Expo Integration](https://www.better-auth.com/docs/integrations/expo)
 
 ## Scripts
 
