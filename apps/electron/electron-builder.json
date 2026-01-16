@@ -6,14 +6,48 @@
     "output": "release"
   },
   "files": ["dist/**/*"],
+  "npmRebuild": false,
+  "publish": {
+    "provider": "github",
+    "owner": "slashv",
+    "repo": "livestore-turbo",
+    "releaseType": "release"
+  },
   "mac": {
-    "target": ["dmg"],
-    "category": "public.app-category.productivity"
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "category": "public.app-category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false
   },
   "win": {
-    "target": ["nsis"]
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
   },
   "linux": {
-    "target": ["AppImage"]
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ],
+    "category": "Utility"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": true
   }
 }

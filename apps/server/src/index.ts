@@ -9,15 +9,37 @@ export { SyncBackendDO } from './sync-backend'
 
 const app = new Hono<{ Bindings: Env }>()
 
-// CORS for development - handle null/missing origins for Electron
+// Production origins
+const PRODUCTION_ORIGINS = [
+  'https://livestore-todo.pages.dev',
+  'https://livestore-app-server.contact-106.workers.dev',
+]
+
+// CORS configuration - handles both development and production
 app.use(
   '*',
   cors({
-    origin: (origin) => {
-      // Allow null/missing origin (Electron file:// requests, curl, etc.)
-      if (!origin || origin === 'null') return 'http://localhost:8787'
-      // Allow localhost origins
+    origin: (origin, c) => {
+      // Allow null/missing origin (Electron file:// requests, curl, mobile apps, etc.)
+      if (!origin || origin === 'null') {
+        // In production, return the server URL; in dev, return localhost
+        const isProduction = c.env.BETTER_AUTH_URL.includes('workers.dev')
+        return isProduction
+          ? 'https://livestore-app-server.contact-106.workers.dev'
+          : 'http://localhost:8787'
+      }
+
+      // Allow localhost origins (development)
       if (origin.startsWith('http://localhost:')) return origin
+
+      // Allow production origins
+      if (PRODUCTION_ORIGINS.some((allowed) => origin.startsWith(allowed))) {
+        return origin
+      }
+
+      // Allow *.pages.dev subdomains (for preview deployments)
+      if (origin.endsWith('.pages.dev')) return origin
+
       return null
     },
     credentials: true,

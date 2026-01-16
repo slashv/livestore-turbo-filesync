@@ -1,0 +1,170 @@
+name: Deploy All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      deploy_server:
+        description: 'Deploy server'
+        type: boolean
+        default: true
+      deploy_web:
+        description: 'Deploy web'
+        type: boolean
+        default: true
+      deploy_electron:
+        description: 'Deploy electron'
+        type: boolean
+        default: true
+      deploy_mobile:
+        description: 'Deploy mobile'
+        type: boolean
+        default: true
+
+env:
+  PNPM_VERSION: '9.15.0'
+  NODE_VERSION: '20'
+
+jobs:
+  # =============================================================================
+  # Deploy Server to Cloudflare Workers
+  # =============================================================================
+  deploy-server:
+    name: Deploy Server
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.deploy_server == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Cloudflare Workers
+        run: pnpm --filter @repo/server run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  # =============================================================================
+  # Deploy Web to Cloudflare Pages
+  # =============================================================================
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.deploy_web == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and deploy to Cloudflare Pages
+        run: pnpm --filter @repo/web run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  # =============================================================================
+  # Deploy Electron to GitHub Releases
+  # =============================================================================
+  deploy-electron:
+    name: Deploy Electron (${{ matrix.os }})
+    if: github.event_name == 'push' || github.event.inputs.deploy_electron == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and publish Electron app
+        run: pnpm --filter @repo/electron run deploy:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS code signing (optional - add when you have certificates)
+          # CSC_LINK: ${{ secrets.MAC_CERTS }}
+          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+  # =============================================================================
+  # Deploy Mobile to EAS Build
+  # =============================================================================
+  deploy-mobile:
+    name: Deploy Mobile
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.deploy_mobile == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with EAS
+        run: pnpm --filter @repo/mobile run deploy
+        working-directory: apps/mobile

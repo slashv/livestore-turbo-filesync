@@ -1,8 +1,12 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config'
 
-// Parse sync URL to get API base URL
-const syncUrl = process.env.LIVESTORE_SYNC_URL ?? 'http://localhost:8787/sync'
-const apiUrl = syncUrl.replace('/sync', '')
+// Production URLs
+const PRODUCTION_SERVER = 'https://livestore-app-server.contact-106.workers.dev'
+
+// Use environment variables if provided, otherwise use production URLs
+// In development, set LIVESTORE_SYNC_URL=http://localhost:8787/sync
+const syncUrl = process.env.LIVESTORE_SYNC_URL ?? `${PRODUCTION_SERVER}/sync`
+const apiUrl = process.env.API_URL ?? syncUrl.replace('/sync', '')
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

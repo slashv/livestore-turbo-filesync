@@ -1,17 +1,98 @@
 import { join } from 'node:path'
-import { BrowserWindow, app, session, shell } from 'electron'
+import { BrowserWindow, app, dialog, session, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 
-const API_URL = process.env.VITE_API_URL ?? 'http://localhost:8787'
+// Production API URL
+const API_URL = process.env.VITE_API_URL ?? 'https://livestore-app-server.contact-106.workers.dev'
+
+// Use localhost in development
+const isDev = process.env.NODE_ENV === 'development'
+const effectiveApiUrl = isDev ? 'http://localhost:8787' : API_URL
 
 let mainWindow: BrowserWindow | null = null
 
+// =============================================================================
+// Auto-updater configuration
+// =============================================================================
+function setupAutoUpdater() {
+  // Don't check for updates in development
+  if (isDev) return
+
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for updates...')
+  })
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version)
+    dialog
+      .showMessageBox({
+        type: 'info',
+        title: 'Update Available',
+        message: `A new version (${info.version}) is available. Would you like to download it now?`,
+        buttons: ['Download', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then((result) => {
+        if (result.response === 0) {
+          autoUpdater.downloadUpdate()
+        }
+      })
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('No updates available')
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    console.log(`Download progress: ${Math.round(progress.percent)}%`)
+    mainWindow?.setProgressBar(progress.percent / 100)
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info.version)
+    mainWindow?.setProgressBar(-1) // Remove progress bar
+    dialog
+      .showMessageBox({
+        type: 'info',
+        title: 'Update Ready',
+        message: `Version ${info.version} has been downloaded. Restart the app to apply the update.`,
+        buttons: ['Restart Now', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then((result) => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall()
+        }
+      })
+  })
+
+  autoUpdater.on('error', (error) => {
+    console.error('Auto-updater error:', error)
+  })
+
+  // Check for updates after app is ready (with a small delay)
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch(console.error)
+  }, 3000)
+}
+
+// =============================================================================
+// Window creation
+// =============================================================================
 function createWindow() {
   // Intercept requests to add Origin header for auth requests (file:// has no origin)
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    { urls: [`${API_URL}/*`] },
+    { urls: [`${effectiveApiUrl}/*`] },
     (details, callback) => {
       if (!details.requestHeaders.Origin) {
-        details.requestHeaders.Origin = 'http://localhost:5173'
+        details.requestHeaders.Origin = isDev
+          ? 'http://localhost:5173'
+          : 'https://livestore-todo.pages.dev'
       }
       callback({ requestHeaders: details.requestHeaders })
     }
@@ -20,7 +101,7 @@ function createWindow() {
   // Fix cookie handling for cross-origin requests from file://
   // Set cookies to be accessible from file:// protocol
   session.defaultSession.webRequest.onHeadersReceived(
-    { urls: [`${API_URL}/*`] },
+    { urls: [`${effectiveApiUrl}/*`] },
     (details, callback) => {
       const responseHeaders = { ...details.responseHeaders }
 
@@ -71,13 +152,14 @@ function createWindow() {
   }
 
   // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev) {
     mainWindow.webContents.openDevTools()
   }
 }
 
 app.whenReady().then(() => {
   createWindow()
+  setupAutoUpdater()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

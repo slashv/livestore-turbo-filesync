@@ -1,0 +1,52 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "LIVESTORE_SYNC_URL": "http://localhost:8787/sync",
+        "API_URL": "http://localhost:8787"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "LIVESTORE_SYNC_URL": "https://livestore-app-server.contact-106.workers.dev/sync",
+        "API_URL": "https://livestore-app-server.contact-106.workers.dev"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "ios": {
+        "resourceClass": "m1-medium"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "LIVESTORE_SYNC_URL": "https://livestore-app-server.contact-106.workers.dev/sync",
+        "API_URL": "https://livestore-app-server.contact-106.workers.dev"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "YOUR_APPLE_ID",
+        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "YOUR_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

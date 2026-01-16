@@ -14,8 +14,8 @@ var response = http.post(API_URL + '/api/register', {
   body: JSON.stringify({
     email: email,
     password: password,
-    name: name
-  })
+    name: name,
+  }),
 })
 
 console.log('Registration response status: ' + response.status)
@@ -24,5 +24,5 @@ console.log('Created test user: ' + email)
 // Export credentials for use in the flow
 output.testUser = {
   email: email,
-  password: password
+  password: password,
 }

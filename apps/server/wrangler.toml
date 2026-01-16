@@ -7,11 +7,11 @@ compatibility_flags = ["enable_request_signal", "nodejs_compat"]
 port = 8787
 ip = "0.0.0.0"
 
-# D1 Database for authentication
+# Production D1 Database for authentication
 [[d1_databases]]
 binding = "DB"
-database_name = "livestore-auth"
-database_id = "placeholder-will-be-replaced-after-creation"
+database_name = "livestore-auth-prod"
+database_id = "42cd6704-6261-4c5b-aed5-b55dd35d874f"
 
 # LiveStore Sync Backend Durable Object
 [[durable_objects.bindings]]
@@ -23,18 +23,21 @@ class_name = "SyncBackendDO"
 tag = "v1"
 new_sqlite_classes = ["SyncBackendDO"]
 
+# Production environment variables
+# Note: BETTER_AUTH_SECRET should be set via `wrangler secret put BETTER_AUTH_SECRET`
 [vars]
-BETTER_AUTH_SECRET = "development-secret-change-in-production"
-BETTER_AUTH_URL = "http://localhost:8787"
+BETTER_AUTH_URL = "https://livestore-app-server.contact-106.workers.dev"
 
+# =============================================================================
 # Development environment
+# =============================================================================
 [env.dev]
 name = "livestore-app-server-dev"
 
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "livestore-auth-dev"
-database_id = "placeholder-will-be-replaced-after-creation"
+database_id = "eb8e983f-d33f-45e5-ba8a-59e4edbc69db"
 
 [[env.dev.durable_objects.bindings]]
 name = "SYNC_BACKEND_DO"
@@ -43,3 +46,7 @@ class_name = "SyncBackendDO"
 [[env.dev.migrations]]
 tag = "v1"
 new_sqlite_classes = ["SyncBackendDO"]
+
+[env.dev.vars]
+BETTER_AUTH_SECRET = "development-secret-change-in-production"
+BETTER_AUTH_URL = "http://localhost:8787"

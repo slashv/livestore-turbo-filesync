@@ -1,7 +1,9 @@
 {
   "name": "@repo/electron",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "LiveStore Todo - Electron Desktop App",
+  "author": "Victor Nyberg",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -9,6 +11,13 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit",
     "package": "electron-builder",
+    "package:mac": "electron-builder --mac",
+    "package:win": "electron-builder --win",
+    "package:linux": "electron-builder --linux",
+    "deploy": "pnpm build && electron-builder --publish always",
+    "deploy:mac": "pnpm build && electron-builder --mac --publish always",
+    "deploy:win": "pnpm build && electron-builder --win --publish always",
+    "deploy:linux": "pnpm build && electron-builder --linux --publish always",
     "test:e2e": "pnpm build && playwright test --config=e2e/playwright.config.ts",
     "test:e2e:headed": "pnpm build && playwright test --config=e2e/playwright.config.ts --headed"
   },
@@ -22,6 +31,7 @@
     "@repo/core": "workspace:*",
     "@repo/schema": "workspace:*",
     "better-auth": "^1.2.0",
+    "electron-updater": "^6.7.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

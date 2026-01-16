@@ -1,0 +1,6 @@
+# Build output
+release/
+out/
+
+# Dev output
+dist/

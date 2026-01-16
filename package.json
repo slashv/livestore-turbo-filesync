@@ -17,7 +17,12 @@
     "typecheck": "turbo run typecheck",
     "test:e2e:web": "pnpm --filter @repo/web test:e2e",
     "test:e2e:electron": "pnpm --filter @repo/electron test:e2e",
-    "test:e2e:mobile": "pnpm --filter @repo/mobile test:e2e"
+    "test:e2e:mobile": "pnpm --filter @repo/mobile test:e2e",
+    "deploy": "turbo run deploy",
+    "deploy:server": "pnpm --filter @repo/server deploy",
+    "deploy:web": "pnpm --filter @repo/web deploy",
+    "deploy:electron": "pnpm --filter @repo/electron deploy",
+    "deploy:mobile": "pnpm --filter @repo/mobile deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

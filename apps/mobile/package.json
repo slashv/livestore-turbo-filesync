@@ -1,6 +1,6 @@
 {
   "name": "@repo/mobile",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,12 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "./e2e/run-e2e.sh"
+    "test:e2e": "./e2e/run-e2e.sh",
+    "build:dev": "eas build --profile development --platform all",
+    "build:preview": "eas build --profile preview --platform all",
+    "build:production": "eas build --profile production --platform all",
+    "deploy": "eas build --profile production --platform all --non-interactive",
+    "submit": "eas submit --platform all --profile production"
   },
   "dependencies": {
     "@better-auth/expo": "^1.2.0",
