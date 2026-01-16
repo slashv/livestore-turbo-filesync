@@ -64,4 +64,9 @@ const state = State.SQLite.makeState({ tables, materializers })
 export const schema = makeSchema({ events, state })
 
 // Sync payload schema for authentication
-export const SyncPayload = Schema.Struct({ authToken: Schema.String })
+// - authToken: User ID for store identification
+// - cookie: Optional session cookie for mobile auth (web uses native cookie headers)
+export const SyncPayload = Schema.Struct({
+  authToken: Schema.String,
+  cookie: Schema.optional(Schema.String),
+})

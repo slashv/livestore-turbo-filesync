@@ -1,7 +1,7 @@
-import { createAuthClient } from 'better-auth/react'
 import { expoClient } from '@better-auth/expo/client'
-import * as SecureStore from 'expo-secure-store'
+import { createAuthClient } from 'better-auth/react'
 import Constants from 'expo-constants'
+import * as SecureStore from 'expo-secure-store'
 
 const expoConfig = Constants.expoConfig?.extra ?? {}
 const baseURL = (expoConfig.API_URL as string) ?? 'http://localhost:8787'

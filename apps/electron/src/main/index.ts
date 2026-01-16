@@ -10,8 +10,8 @@ function createWindow() {
   session.defaultSession.webRequest.onBeforeSendHeaders(
     { urls: [`${API_URL}/*`] },
     (details, callback) => {
-      if (!details.requestHeaders['Origin']) {
-        details.requestHeaders['Origin'] = 'http://localhost:5173'
+      if (!details.requestHeaders.Origin) {
+        details.requestHeaders.Origin = 'http://localhost:5173'
       }
       callback({ requestHeaders: details.requestHeaders })
     }
@@ -23,7 +23,7 @@ function createWindow() {
     { urls: [`${API_URL}/*`] },
     (details, callback) => {
       const responseHeaders = { ...details.responseHeaders }
-      
+
       // Modify Set-Cookie headers to work with file:// protocol
       if (responseHeaders['set-cookie'] || responseHeaders['Set-Cookie']) {
         const cookies = responseHeaders['set-cookie'] || responseHeaders['Set-Cookie']
@@ -31,16 +31,14 @@ function createWindow() {
           const modifiedCookies = cookies.map((cookie: string) => {
             // Remove SameSite=Lax/Strict and add SameSite=None; Secure
             // Also remove Domain restrictions for file:// compatibility
-            return cookie
-              .replace(/;\s*SameSite=\w+/gi, '')
-              .replace(/;\s*Domain=[^;]+/gi, '')
-              + '; SameSite=None'
+            return `${cookie.replace(/;\s*SameSite=\w+/gi, '').replace(/;\s*Domain=[^;]+/gi, '')}; SameSite=None`
           })
           responseHeaders['Set-Cookie'] = modifiedCookies
-          delete responseHeaders['set-cookie']
+          // Remove lowercase version to avoid duplicates (set to empty array instead of delete for performance)
+          ;(responseHeaders as Record<string, string[] | undefined>)['set-cookie'] = undefined
         }
       }
-      
+
       callback({ responseHeaders })
     }
   )

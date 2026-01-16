@@ -22,7 +22,11 @@ function AuthenticatedApp() {
     <div className="relative">
       <div className="absolute top-8 right-4 flex items-center gap-4 z-10">
         <span className="text-sm text-gray-600">{user.email}</span>
-        <button type="button" onClick={signOut} className="text-sm text-rose-600 hover:text-rose-700">
+        <button
+          type="button"
+          onClick={signOut}
+          className="text-sm text-rose-600 hover:text-rose-700"
+        >
           Sign out
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { type ReactNode, createContext, useContext } from 'react'
 import { authClient, useSession } from '~/lib/auth-client'
 
 interface User {
@@ -22,7 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignIn = async (email: string, password: string) => {
     const result = await authClient.signIn.email({ email, password })
-    return { error: result.error ? { message: result.error.message ?? 'Sign in failed' } : undefined }
+    return {
+      error: result.error ? { message: result.error.message ?? 'Sign in failed' } : undefined,
+    }
   }
 
   const handleSignOut = async () => {

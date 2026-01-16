@@ -1,4 +1,4 @@
-import type { ExpoConfig, ConfigContext } from 'expo/config'
+import type { ConfigContext, ExpoConfig } from 'expo/config'
 
 // Parse sync URL to get API base URL
 const syncUrl = process.env.LIVESTORE_SYNC_URL ?? 'http://localhost:8787/sync'

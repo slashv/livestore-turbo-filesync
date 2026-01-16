@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react'
 import { authClient, clearToken } from '~/lib/auth-client'
 
 interface User {
@@ -37,10 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:8787'}/api/auth/get-session`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL ?? 'http://localhost:8787'}/api/auth/get-session`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+
         if (response.ok) {
           const data = await response.json()
           if (data.user) {
@@ -69,17 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSignIn = async (email: string, password: string) => {
     const result = await authClient.signIn.email({ email, password })
-    
+
     if (result.error) {
       return { error: { message: result.error.message ?? 'Sign in failed' } }
     }
-    
+
     // On success, the token is saved by customFetch, now save user
     if (result.data?.user) {
       setUser(result.data.user)
       localStorage.setItem(USER_KEY, JSON.stringify(result.data.user))
     }
-    
+
     return {}
   }
 

@@ -58,6 +58,20 @@ app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
   }
 })
 
+// Helper to extract cookie from headers or payload
+function extractCookie(headers: ReadonlyMap<string, string>, payload: unknown): string | undefined {
+  // Try cookie from HTTP headers first (web/electron - sent automatically by browser)
+  const headerCookie = headers.get('cookie')
+  if (headerCookie) return headerCookie
+
+  // Fall back to cookie from syncPayload (mobile - passed explicitly)
+  if (payload && typeof payload === 'object' && 'cookie' in payload) {
+    return (payload as { cookie?: string }).cookie
+  }
+
+  return undefined
+}
+
 // LiveStore sync endpoint with auth validation
 app.all('/sync', async (c) => {
   const searchParams = SyncBackend.matchSyncRequest(c.req.raw)
@@ -66,20 +80,42 @@ app.all('/sync', async (c) => {
     return c.json({ error: 'Invalid sync request' }, 400)
   }
 
-  // Validate auth token from request cookies
   const auth = createAuth(c.env)
-  const session = await auth.api.getSession({ headers: c.req.raw.headers })
 
-  if (!session) {
-    return c.json({ error: 'Unauthorized' }, 401)
+  // Validate session from cookies (headers for web, payload for mobile)
+  const validatePayload = async (
+    payload: unknown,
+    { storeId, headers }: { storeId: string; headers: ReadonlyMap<string, string> }
+  ) => {
+    const cookie = extractCookie(headers, payload)
+
+    if (!cookie) {
+      throw new Error('Unauthorized: No authentication cookie')
+    }
+
+    // Validate session using better-auth
+    const session = await auth.api.getSession({
+      headers: new Headers({ cookie }),
+    })
+
+    if (!session) {
+      throw new Error('Unauthorized: Invalid session')
+    }
+
+    // Verify user has access to this store (storeId === userId)
+    if (session.user.id !== storeId) {
+      throw new Error('Unauthorized: User does not have access to this store')
+    }
   }
 
+  // @ts-expect-error - Type instantiation is excessively deep due to complex generics in handleSyncRequest
   return SyncBackend.handleSyncRequest({
     request: c.req.raw,
     searchParams,
     ctx: c.executionCtx,
+    env: c.env,
     syncBackendBinding: 'SYNC_BACKEND_DO',
-    headers: {},
+    validatePayload,
   })
 })
 

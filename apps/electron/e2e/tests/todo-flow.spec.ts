@@ -1,12 +1,12 @@
+import { resolve } from 'node:path'
 import {
-  test,
-  expect,
-  _electron as electron,
-  request,
   type ElectronApplication,
   type Page,
+  _electron as electron,
+  expect,
+  request,
+  test,
 } from '@playwright/test'
-import { resolve } from 'node:path'
 
 const testUser = {
   email: 'e2e-electron-test@example.com',

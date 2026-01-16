@@ -1,6 +1,6 @@
+import { expo } from '@better-auth/expo'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { expo } from '@better-auth/expo'
 import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db/schema'
 import type { Env } from './env'
@@ -47,7 +47,7 @@ export async function registerUser(
       },
     })
     return { success: true, message: `Created user: ${userData.email}` }
-  } catch (error) {
+  } catch (_error) {
     // User likely already exists
     return { success: false, message: `User exists or error: ${userData.email}` }
   }

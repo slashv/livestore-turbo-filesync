@@ -127,11 +127,17 @@ export function TodoApp({ userId }: { userId: string }) {
               {filters.map((filter) => (
                 <TouchableOpacity
                   key={filter}
-                  style={[styles.filterButton, uiState.filter === filter && styles.filterButtonActive]}
+                  style={[
+                    styles.filterButton,
+                    uiState.filter === filter && styles.filterButtonActive,
+                  ]}
                   onPress={() => actions.setFilter(filter)}
                 >
                   <Text
-                    style={[styles.filterText, uiState.filter === filter && styles.filterTextActive]}
+                    style={[
+                      styles.filterText,
+                      uiState.filter === filter && styles.filterTextActive,
+                    ]}
                   >
                     {filter.charAt(0).toUpperCase() + filter.slice(1)}
                   </Text>

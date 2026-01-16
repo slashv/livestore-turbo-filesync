@@ -8,15 +8,16 @@ const TOKEN_KEY = 'livestore-auth-token'
 const customFetch: typeof fetch = async (input, init) => {
   const token = localStorage.getItem(TOKEN_KEY)
   const headers = new Headers(init?.headers)
-  
+
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
-  
+
   const response = await fetch(input, { ...init, headers })
-  
+
   // If sign-in response, save the token
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url
+  const url =
+    typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url
   if (url.includes('/sign-in') && response.ok) {
     try {
       const cloned = response.clone()
@@ -28,7 +29,7 @@ const customFetch: typeof fetch = async (input, init) => {
       // Ignore JSON parse errors
     }
   }
-  
+
   return response
 }
 
