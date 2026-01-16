@@ -18,7 +18,7 @@
     "deploy:mac": "pnpm build && electron-builder --mac --publish always",
     "deploy:win": "pnpm build && electron-builder --win --publish always",
     "deploy:linux": "pnpm build && electron-builder --linux --publish always",
-    "test:e2e": "pnpm build && playwright test --config=e2e/playwright.config.ts",
+    "test:e2e": "VITE_API_URL=http://localhost:8787 pnpm build && playwright test --config=e2e/playwright.config.ts",
     "test:e2e:headed": "pnpm build && playwright test --config=e2e/playwright.config.ts --headed"
   },
   "dependencies": {

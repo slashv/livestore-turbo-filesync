@@ -11,10 +11,14 @@ import {
 } from 'react-native'
 import { useAuth } from './AuthProvider'
 
+type AuthMode = 'login' | 'register'
+
 export function LoginScreen() {
-  const { signIn } = useAuth()
+  const { signIn, signUp } = useAuth()
+  const [mode, setMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -22,12 +26,28 @@ export function LoginScreen() {
     setError('')
     setIsLoading(true)
 
-    const result = await signIn(email, password)
-
-    if (result.error) {
-      setError(result.error.message)
+    if (mode === 'register') {
+      if (!name.trim()) {
+        setError('Name is required')
+        setIsLoading(false)
+        return
+      }
+      const result = await signUp(email, password, name)
+      if (result.error) {
+        setError(result.error.message)
+      }
+    } else {
+      const result = await signIn(email, password)
+      if (result.error) {
+        setError(result.error.message)
+      }
     }
     setIsLoading(false)
+  }
+
+  const toggleMode = () => {
+    setMode(mode === 'login' ? 'register' : 'login')
+    setError('')
   }
 
   return (
@@ -38,7 +58,23 @@ export function LoginScreen() {
       <Text style={styles.title}>todos</Text>
 
       <View style={styles.card}>
-        <Text style={styles.heading}>Sign In</Text>
+        <Text style={styles.heading}>{mode === 'login' ? 'Sign In' : 'Create Account'}</Text>
+
+        {mode === 'register' && (
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              testID="name-input"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name"
+              placeholderTextColor="#999"
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+          </View>
+        )}
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
@@ -47,7 +83,7 @@ export function LoginScreen() {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="test1@example.com"
+            placeholder="you@example.com"
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -62,20 +98,20 @@ export function LoginScreen() {
             style={styles.input}
             value={password}
             onChangeText={setPassword}
-            placeholder="password"
+            placeholder={mode === 'register' ? 'Min 6 characters' : 'Your password'}
             placeholderTextColor="#999"
             secureTextEntry
           />
         </View>
 
         {error ? (
-          <Text testID="login-error" style={styles.error}>
+          <Text testID="auth-error" style={styles.error}>
             {error}
           </Text>
         ) : null}
 
         <TouchableOpacity
-          testID="login-button"
+          testID={mode === 'login' ? 'login-button' : 'register-button'}
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleSubmit}
           disabled={isLoading}
@@ -83,14 +119,21 @@ export function LoginScreen() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
+            <Text style={styles.buttonText}>{mode === 'login' ? 'Sign In' : 'Create Account'}</Text>
           )}
         </TouchableOpacity>
 
-        <Text style={styles.hint}>
-          Test accounts: test1@example.com or test2@example.com{'\n'}
-          Password: password
-        </Text>
+        <TouchableOpacity
+          testID="toggle-auth-mode"
+          onPress={toggleMode}
+          style={styles.toggleButton}
+        >
+          <Text style={styles.toggleText}>
+            {mode === 'login'
+              ? "Don't have an account? Sign up"
+              : 'Already have an account? Sign in'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   )
@@ -165,11 +208,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  hint: {
-    color: '#999',
-    fontSize: 12,
-    textAlign: 'center',
+  toggleButton: {
     marginTop: 20,
-    lineHeight: 18,
+    alignItems: 'center',
+  },
+  toggleText: {
+    color: '#b83f45',
+    fontSize: 14,
+    fontWeight: '500',
   },
 })

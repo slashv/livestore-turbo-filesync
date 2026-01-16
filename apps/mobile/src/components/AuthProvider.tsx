@@ -12,6 +12,11 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   signIn: (email: string, password: string) => Promise<{ error?: { message: string } }>
+  signUp: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ error?: { message: string } }>
   signOut: () => Promise<void>
 }
 
@@ -27,6 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const handleSignUp = async (email: string, password: string, name: string) => {
+    const result = await authClient.signUp.email({ email, password, name })
+    return {
+      error: result.error ? { message: result.error.message ?? 'Sign up failed' } : undefined,
+    }
+  }
+
   const handleSignOut = async () => {
     await authClient.signOut()
   }
@@ -36,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: isPending,
     isAuthenticated: !!session?.user,
     signIn: handleSignIn,
+    signUp: handleSignUp,
     signOut: handleSignOut,
   }
 

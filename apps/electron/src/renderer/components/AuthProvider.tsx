@@ -12,6 +12,11 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   signIn: (email: string, password: string) => Promise<{ error?: { message: string } }>
+  signUp: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ error?: { message: string } }>
   signOut: () => Promise<void>
 }
 
@@ -86,6 +91,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {}
   }
 
+  const handleSignUp = async (email: string, password: string, name: string) => {
+    const result = await authClient.signUp.email({ email, password, name })
+
+    if (result.error) {
+      return { error: { message: result.error.message ?? 'Sign up failed' } }
+    }
+
+    // On success, the token is saved by customFetch, now save user
+    if (result.data?.user) {
+      setUser(result.data.user)
+      localStorage.setItem(USER_KEY, JSON.stringify(result.data.user))
+    }
+
+    return {}
+  }
+
   const handleSignOut = async () => {
     try {
       await authClient.signOut()
@@ -102,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     isAuthenticated: !!user,
     signIn: handleSignIn,
+    signUp: handleSignUp,
     signOut: handleSignOut,
   }
 

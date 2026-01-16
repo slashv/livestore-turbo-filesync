@@ -1,0 +1,80 @@
+appId: com.livestore.todo
+---
+# Clear keychain (where expo-secure-store keeps auth tokens)
+- clearKeychain
+
+# Clear app state and stop the app
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Launch app fresh
+- launchApp
+
+# Step 1: Verify we're on the login screen
+- assertVisible: "Sign In"
+
+# Step 2: Toggle to registration mode
+- tapOn:
+    id: "toggle-auth-mode"
+
+# Verify we're now in registration mode
+- assertVisible: "Create Account"
+
+# Step 3: Fill out registration form with unique user
+- tapOn:
+    id: "name-input"
+- inputText: "E2E Mobile Registration User"
+- tapOn:
+    id: "email-input"
+- inputText: ${new Date().getTime()}@test.local
+- tapOn:
+    id: "password-input"
+- inputText: "password123"
+
+# Step 4: Submit registration
+- tapOn:
+    id: "register-button"
+
+# Dismiss iOS "Save Password" dialog if it appears
+- runFlow:
+    when:
+      visible:
+        text: ".*assword.*"
+    commands:
+      - tapOn:
+          text: ".*ot Now.*"
+
+# Step 5: Wait for todo screen to load (verify we're logged in)
+- extendedWaitUntil:
+    visible:
+      id: "todo-input"
+    timeout: 15000
+
+# Delete any existing todo first (the "Welcome to livestore" default)
+- tapOn:
+    id: "todo-delete-.*"
+    index: 0
+
+# Step 6: Create a new todo to verify full functionality
+- tapOn:
+    id: "todo-input"
+- inputText: "E2E Registration Test Todo"
+- pressKey: Enter
+
+# Verify todo appears
+- extendedWaitUntil:
+    visible:
+      text: "E2E Registration Test Todo"
+    timeout: 5000
+
+# Clean up - delete the todo
+- tapOn:
+    id: "todo-delete-.*"
+    index: 0
+
+# Verify todo is gone
+- extendedWaitUntil:
+    notVisible:
+      text: "E2E Registration Test Todo"
+    timeout: 5000

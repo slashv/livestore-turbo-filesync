@@ -20,10 +20,10 @@ const customFetch: typeof fetch = async (input, init) => {
 
   const response = await fetch(input, { ...init, headers })
 
-  // If sign-in response, save the token
+  // If sign-in or sign-up response, save the token
   const url =
     typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url
-  if (url.includes('/sign-in') && response.ok) {
+  if ((url.includes('/sign-in') || url.includes('/sign-up')) && response.ok) {
     try {
       const cloned = response.clone()
       const data = await cloned.json()
