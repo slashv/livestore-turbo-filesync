@@ -29,12 +29,7 @@ export function createAuth(env: Env) {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
       updateAge: 60 * 60 * 24, // 1 day
     },
-    trustedOrigins: ['*', 'null'],
-    advanced: {
-      crossSubDomainCookies: {
-        enabled: false,
-      },
-    },
+    trustedOrigins: ['*'],
   })
 }
 

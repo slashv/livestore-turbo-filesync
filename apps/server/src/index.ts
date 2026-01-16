@@ -9,37 +9,19 @@ export { SyncBackendDO } from './sync-backend'
 
 const app = new Hono<{ Bindings: Env }>()
 
-// Production origins
-const PRODUCTION_ORIGINS = [
-  'https://livestore-todo.pages.dev',
-  'https://livestore-app-server.contact-106.workers.dev',
-]
-
 // CORS configuration - handles both development and production
 app.use(
   '*',
   cors({
-    origin: (origin, c) => {
+    origin: (origin) => {
       // Allow null/missing origin (Electron file:// requests, curl, mobile apps, etc.)
-      if (!origin || origin === 'null') {
-        // In production, return the server URL; in dev, return localhost
-        const isProduction = c.env.BETTER_AUTH_URL.includes('workers.dev')
-        return isProduction
-          ? 'https://livestore-app-server.contact-106.workers.dev'
-          : 'http://localhost:8787'
-      }
-
+      if (!origin || origin === 'null') return '*'
       // Allow localhost origins (development)
       if (origin.startsWith('http://localhost:')) return origin
-
       // Allow production origins
-      if (PRODUCTION_ORIGINS.some((allowed) => origin.startsWith(allowed))) {
-        return origin
-      }
-
+      if (origin === 'https://livestore-todo.pages.dev') return origin
       // Allow *.pages.dev subdomains (for preview deployments)
       if (origin.endsWith('.pages.dev')) return origin
-
       return null
     },
     credentials: true,
@@ -69,11 +51,7 @@ app.post('/api/register', async (c) => {
   return c.json(result, result.success ? 201 : 409)
 })
 
-// Better-auth routes - handle OPTIONS for CORS preflight
-app.options('/api/auth/*', (c) => {
-  return new Response(null, { status: 204 })
-})
-
+// Better-auth routes
 app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
   try {
     const auth = createAuth(c.env)
@@ -85,41 +63,7 @@ app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
       body: c.req.raw.body,
       redirect: c.req.raw.redirect,
     })
-    const response = await auth.handler(clonedRequest)
-
-    // Ensure CORS headers are present on the response
-    const origin = c.req.header('origin')
-    const newHeaders = new Headers(response.headers)
-
-    if (!newHeaders.has('Access-Control-Allow-Origin')) {
-      // Determine the allowed origin
-      let allowedOrigin: string | null = null
-
-      if (!origin || origin === 'null') {
-        // Electron/mobile apps with no origin - use server URL or localhost based on env
-        const isProduction = c.env.BETTER_AUTH_URL.includes('workers.dev')
-        allowedOrigin = isProduction
-          ? 'https://livestore-app-server.contact-106.workers.dev'
-          : 'http://localhost:8787'
-      } else if (
-        origin.startsWith('http://localhost:') ||
-        origin.endsWith('.pages.dev') ||
-        origin === 'https://livestore-todo.pages.dev'
-      ) {
-        allowedOrigin = origin
-      }
-
-      if (allowedOrigin) {
-        newHeaders.set('Access-Control-Allow-Origin', allowedOrigin)
-        newHeaders.set('Access-Control-Allow-Credentials', 'true')
-      }
-    }
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders,
-    })
+    return auth.handler(clonedRequest)
   } catch (error) {
     console.error('Auth error:', error)
     return c.json({ error: String(error) }, 500)
