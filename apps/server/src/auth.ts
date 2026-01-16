@@ -33,32 +33,24 @@ export function createAuth(env: Env) {
   })
 }
 
-// Seed test users function
-export async function seedTestUsers(auth: ReturnType<typeof createAuth>) {
-  const testUsers = [
-    { email: 'test1@example.com', password: 'password', name: 'Test User 1' },
-    { email: 'test2@example.com', password: 'password', name: 'Test User 2' },
-  ]
-
-  const results: string[] = []
-
-  for (const user of testUsers) {
-    try {
-      await auth.api.signUpEmail({
-        body: {
-          email: user.email,
-          password: user.password,
-          name: user.name,
-        },
-      })
-      results.push(`Created user: ${user.email}`)
-    } catch (error) {
-      // User likely already exists
-      results.push(`User exists or error: ${user.email}`)
-    }
+// Register a new user
+export async function registerUser(
+  auth: ReturnType<typeof createAuth>,
+  userData: { email: string; password: string; name: string }
+) {
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        email: userData.email,
+        password: userData.password,
+        name: userData.name,
+      },
+    })
+    return { success: true, message: `Created user: ${userData.email}` }
+  } catch (error) {
+    // User likely already exists
+    return { success: false, message: `User exists or error: ${userData.email}` }
   }
-
-  return results
 }
 
 export type Auth = ReturnType<typeof createAuth>

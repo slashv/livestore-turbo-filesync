@@ -1,12 +1,22 @@
 import { test, expect } from '@playwright/test'
 
-// Use a unique user for fresh state - alternate between test users
+// Use a unique user for fresh state
 const testUser = {
-  email: 'test1@example.com',
-  password: 'password',
+  email: 'e2e-test@example.com',
+  password: 'password123',
+  name: 'E2E Test User',
 }
 
+const API_URL = 'http://localhost:8787'
+
 test.describe('Todo App E2E', () => {
+  test.beforeAll(async ({ request }) => {
+    // Register the test user before running tests (will return 409 if already exists)
+    await request.post(`${API_URL}/api/register`, {
+      data: testUser,
+    })
+  })
+
   test.beforeEach(async ({ page }) => {
     // Clear any existing session/storage for fresh state
     await page.context().clearCookies()

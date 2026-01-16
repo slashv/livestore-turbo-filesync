@@ -1,7 +1,7 @@
 import * as SyncBackend from '@livestore/sync-cf/cf-worker'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { createAuth, seedTestUsers } from './auth'
+import { createAuth, registerUser } from './auth'
 import type { Env } from './env'
 
 // Re-export the Durable Object class
@@ -31,11 +31,20 @@ app.get('/', (c) => {
   return c.json({ status: 'ok', service: 'livestore-app-server' })
 })
 
-// Seed test users endpoint
-app.post('/api/seed-users', async (c) => {
+// Register user endpoint
+app.post('/api/register', async (c) => {
   const auth = createAuth(c.env)
-  const results = await seedTestUsers(auth)
-  return c.json({ success: true, results })
+  const body = await c.req.json<{ email: string; password: string; name: string }>()
+
+  if (!body.email || !body.password || !body.name) {
+    return c.json(
+      { success: false, message: 'Missing required fields: email, password, name' },
+      400
+    )
+  }
+
+  const result = await registerUser(auth, body)
+  return c.json(result, result.success ? 201 : 409)
 })
 
 // Better-auth routes
