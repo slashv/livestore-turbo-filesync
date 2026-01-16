@@ -89,27 +89,37 @@ app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
 
     // Ensure CORS headers are present on the response
     const origin = c.req.header('origin')
-    if (origin) {
-      const newHeaders = new Headers(response.headers)
-      if (!newHeaders.has('Access-Control-Allow-Origin')) {
-        // Check if origin is allowed
-        if (
-          origin.startsWith('http://localhost:') ||
-          origin.endsWith('.pages.dev') ||
-          origin === 'https://livestore-todo.pages.dev'
-        ) {
-          newHeaders.set('Access-Control-Allow-Origin', origin)
-          newHeaders.set('Access-Control-Allow-Credentials', 'true')
-        }
+    const newHeaders = new Headers(response.headers)
+
+    if (!newHeaders.has('Access-Control-Allow-Origin')) {
+      // Determine the allowed origin
+      let allowedOrigin: string | null = null
+
+      if (!origin || origin === 'null') {
+        // Electron/mobile apps with no origin - use server URL or localhost based on env
+        const isProduction = c.env.BETTER_AUTH_URL.includes('workers.dev')
+        allowedOrigin = isProduction
+          ? 'https://livestore-app-server.contact-106.workers.dev'
+          : 'http://localhost:8787'
+      } else if (
+        origin.startsWith('http://localhost:') ||
+        origin.endsWith('.pages.dev') ||
+        origin === 'https://livestore-todo.pages.dev'
+      ) {
+        allowedOrigin = origin
       }
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: newHeaders,
-      })
+
+      if (allowedOrigin) {
+        newHeaders.set('Access-Control-Allow-Origin', allowedOrigin)
+        newHeaders.set('Access-Control-Allow-Credentials', 'true')
+      }
     }
 
-    return response
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    })
   } catch (error) {
     console.error('Auth error:', error)
     return c.json({ error: String(error) }, 500)
