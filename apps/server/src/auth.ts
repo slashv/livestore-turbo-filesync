@@ -30,6 +30,17 @@ export function createAuth(env: Env) {
       updateAge: 60 * 60 * 24, // 1 day
     },
     trustedOrigins: ['*'],
+    advanced: {
+      useSecureCookies: true,
+      cookies: {
+        session_token: {
+          attributes: {
+            sameSite: 'none' as const,
+            secure: true,
+          },
+        },
+      },
+    },
   })
 }
 

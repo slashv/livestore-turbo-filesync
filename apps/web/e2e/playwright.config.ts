@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Allow overriding the base URL via environment variable for testing deployed versions
+const baseURL = process.env.TEST_BASE_URL ?? 'http://localhost:5173'
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -9,7 +12,7 @@ export default defineConfig({
   reporter: 'html',
   timeout: 60000,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

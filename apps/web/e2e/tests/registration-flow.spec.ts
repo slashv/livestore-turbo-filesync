@@ -8,6 +8,9 @@ const testUser = {
   name: 'E2E Web Registration User',
 }
 
+// API URL for direct server requests (defaults to localhost for local testing)
+const apiBaseUrl = process.env.TEST_API_URL ?? 'http://localhost:8787'
+
 test.describe('Registration Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Clear any existing session/storage for fresh state
@@ -69,7 +72,7 @@ test.describe('Registration Flow E2E', () => {
       password: 'password123',
       name: 'Duplicate Test User',
     }
-    await request.post('http://localhost:8787/api/register', { data: existingUser })
+    await request.post(`${apiBaseUrl}/api/register`, { data: existingUser })
 
     // Navigate to registration form
     await page.getByTestId('toggle-auth-mode').click()
