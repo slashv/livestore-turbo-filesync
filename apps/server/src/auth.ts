@@ -59,9 +59,11 @@ export async function registerUser(
       },
     })
     return { success: true, message: `Created user: ${userData.email}` }
-  } catch (_error) {
+  } catch (error) {
     // User likely already exists
-    return { success: false, message: `User exists or error: ${userData.email}` }
+    console.error('Registration error:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    return { success: false, message: `User exists or error: ${userData.email} - ${message}` }
   }
 }
 

@@ -44,7 +44,7 @@ export function LoginScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-md w-full mx-4">
-        <h1 className="text-4xl font-thin text-center text-rose-800 mb-8">todos</h1>
+        <h1 className="text-4xl font-thin text-center text-rose-800 mb-8">gallery</h1>
 
         <div className="bg-white shadow-lg rounded-lg p-8">
           <h2 className="text-xl font-medium text-gray-800 mb-6 text-center">

@@ -1,5 +1,5 @@
 import { saveFile } from '@livestore-filesync/core'
-import { createGalleryActions, imagesQuery } from '@repo/core'
+import { type Image, createGalleryActions, imagesQuery } from '@repo/core'
 import { useRef } from 'react'
 import { useAppStore } from '~/livestore/store'
 import { ImageCard } from './ImageCard'
@@ -8,7 +8,7 @@ export function Gallery({ userId }: { userId: string }) {
   const store = useAppStore(userId)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const images = store.useQuery(imagesQuery)
+  const images = store.useQuery(imagesQuery) as Image[]
   const actions = createGalleryActions(store)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,10 +16,18 @@ export function Gallery({ userId }: { userId: string }) {
     if (!files?.length) return
 
     for (const file of Array.from(files)) {
-      const result = await saveFile(file)
-      const imageId = crypto.randomUUID()
-      const title = file.name.replace(/\.[^/.]+$/, '')
-      actions.createImage(imageId, title, result.fileId)
+      try {
+        console.log('[Gallery] Saving file:', file.name)
+        const result = await saveFile(file)
+        console.log('[Gallery] File saved:', result)
+        const imageId = crypto.randomUUID()
+        const title = file.name.replace(/\.[^/.]+$/, '')
+        console.log('[Gallery] Creating image:', { imageId, title, fileId: result.fileId })
+        actions.createImage(imageId, title, result.fileId)
+        console.log('[Gallery] Image created')
+      } catch (error) {
+        console.error('[Gallery] Error uploading file:', error)
+      }
     }
 
     if (inputRef.current) inputRef.current.value = ''

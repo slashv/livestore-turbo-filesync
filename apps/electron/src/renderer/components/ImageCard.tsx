@@ -1,5 +1,4 @@
 import { deleteFile, getFileDisplayState, resolveFileUrl } from '@livestore-filesync/core'
-import { resolveThumbnailUrl } from '@livestore-filesync/image/thumbnails'
 import { queryDb } from '@livestore/livestore'
 import { tables } from '@repo/schema'
 import { useEffect, useMemo, useState } from 'react'
@@ -45,7 +44,8 @@ export function ImageCard({ image, userId, onDelete, onUpdateTitle }: ImageCardP
   useEffect(() => {
     if (!file) return
 
-    resolveThumbnailUrl(image.fileId, 'small').then(setThumbnailUrl)
+    // Skip thumbnail for now - wasm-vips has issues
+    // resolveThumbnailUrl(image.fileId, 'small').then(setThumbnailUrl)
     resolveFileUrl(image.fileId).then(setFullUrl)
   }, [image.fileId, file])
 

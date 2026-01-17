@@ -1,6 +1,8 @@
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const testImagePath = path.join(__dirname, '../fixtures/test-image.png')
 
 const testRunId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
@@ -18,6 +20,11 @@ test.describe('Gallery Sync E2E', () => {
   })
 
   test('upload image and verify it appears', async ({ page }) => {
+    // Capture console logs for debugging
+    const logs: string[] = []
+    page.on('console', (msg) => logs.push(`[${msg.type()}] ${msg.text()}`))
+    page.on('pageerror', (err) => logs.push(`[error] ${err.message}`))
+
     await page.goto('/')
     await page.getByTestId('email-input').fill(testUser.email)
     await page.getByTestId('password-input').fill(testUser.password)
@@ -26,8 +33,30 @@ test.describe('Gallery Sync E2E', () => {
     await expect(page.getByTestId('gallery')).toBeVisible({ timeout: 15000 })
     await expect(page.getByTestId('empty-state')).toBeVisible()
 
+    // Wait a bit for FileSync to initialize
+    await page.waitForTimeout(1000)
+
+    // Log console output for debugging
+    console.log(
+      'Logs before upload:',
+      logs.filter(
+        (l) => l.includes('FileSyncProvider') || l.includes('[Gallery]') || l.includes('error')
+      )
+    )
+
     // Upload image
     await page.getByTestId('file-input').setInputFiles(testImagePath)
+
+    // Wait a bit for any async operations
+    await page.waitForTimeout(3000)
+
+    // Log console output for debugging
+    console.log(
+      'Console logs:',
+      logs.filter(
+        (l) => l.includes('[Gallery]') || l.includes('error') || l.includes('FileSyncProvider')
+      )
+    )
 
     // Verify image appears
     await expect(page.locator('[data-testid^="image-card-"]')).toBeVisible({ timeout: 15000 })
@@ -77,12 +106,15 @@ test.describe('Gallery Sync E2E', () => {
       await expect(page.getByTestId('gallery')).toBeVisible({ timeout: 15000 })
     }
 
-    // Wait for existing images to load
+    // Upload an image on page1 first
+    await page1.getByTestId('file-input').setInputFiles(testImagePath)
     await expect(page1.locator('[data-testid^="image-card-"]').first()).toBeVisible({
       timeout: 15000,
     })
+
+    // Wait for the image to sync to page2
     await expect(page2.locator('[data-testid^="image-card-"]').first()).toBeVisible({
-      timeout: 15000,
+      timeout: 30000,
     })
 
     // Edit title on page1

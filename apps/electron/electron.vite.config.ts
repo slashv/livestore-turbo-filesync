@@ -1,6 +1,7 @@
 import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import wasm from 'vite-plugin-wasm'
 
@@ -35,7 +36,10 @@ export default defineConfig({
       viteStaticCopy({
         targets: [
           {
-            src: 'node_modules/wasm-vips/lib/vips.wasm',
+            src: path.resolve(
+              __dirname,
+              '../../node_modules/.pnpm/wasm-vips@0.0.16/node_modules/wasm-vips/lib/vips.wasm'
+            ),
             dest: 'wasm-vips',
           },
         ],
