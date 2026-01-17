@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy:preview": "./scripts/deploy.sh preview",
+    "deploy:prod": "./scripts/deploy.sh prod",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply livestore-auth-prod --local",
+    "db:migrate:dev": "wrangler d1 migrations apply livestore-auth-dev --remote --env dev",
     "db:migrate:prod": "wrangler d1 migrations apply livestore-auth-prod --remote"
   },
   "dependencies": {

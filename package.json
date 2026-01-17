@@ -18,11 +18,16 @@
     "test:e2e:web": "pnpm --filter @repo/web test:e2e",
     "test:e2e:electron": "pnpm --filter @repo/electron test:e2e",
     "test:e2e:mobile": "pnpm --filter @repo/mobile test:e2e",
-    "deploy": "turbo run deploy",
-    "deploy:server": "pnpm --filter @repo/server deploy",
-    "deploy:web": "pnpm --filter @repo/web deploy",
-    "deploy:electron": "pnpm --filter @repo/electron deploy",
-    "deploy:mobile": "pnpm --filter @repo/mobile deploy"
+    "deploy:preview": "turbo run deploy:preview",
+    "deploy:prod": "turbo run deploy:prod",
+    "deploy:server:preview": "pnpm --filter @repo/server deploy:preview",
+    "deploy:server:prod": "pnpm --filter @repo/server deploy:prod",
+    "deploy:web:preview": "pnpm --filter @repo/web deploy:preview",
+    "deploy:web:prod": "pnpm --filter @repo/web deploy:prod",
+    "deploy:electron:preview": "pnpm --filter @repo/electron deploy:preview",
+    "deploy:electron:prod": "pnpm --filter @repo/electron deploy:prod",
+    "deploy:mobile:preview": "pnpm --filter @repo/mobile deploy:preview",
+    "deploy:mobile:prod": "pnpm --filter @repo/mobile deploy:prod"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

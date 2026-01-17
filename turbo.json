@@ -7,8 +7,10 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".expo/**", "release/**"]
     },
-    "deploy": {
-      "dependsOn": ["build"],
+    "deploy:preview": {
+      "cache": false
+    },
+    "deploy:prod": {
       "cache": false
     },
     "dev": {

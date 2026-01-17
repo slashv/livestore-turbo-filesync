@@ -1,604 +1,363 @@
-# Deployment Guide
+# Deployment
 
-This document details the deployment process for all platforms in the LiveStore Todo app.
-
-## Progress Checklist
-
-### Server (Cloudflare Workers)
-- [x] Create production D1 database
-- [x] Update wrangler.toml with production database binding
-- [x] Configure production CORS origins
-- [x] Run production database migrations
-- [x] Add deploy script to package.json
-- [x] Test deployment
-
-**Live at:** https://livestore-app-server.contact-106.workers.dev
-
-### Web (Cloudflare Pages)
-- [x] Configure production environment variables (.env.production)
-- [x] Update worker.ts to use VITE_SYNC_URL
-- [x] Add deploy script to package.json
-- [x] Create Cloudflare Pages project
-- [x] Test deployment
-
-**Live at:** https://livestore-todo.pages.dev
-
-### Electron (GitHub Releases)
-- [x] Install electron-updater dependency
-- [x] Update electron-builder.json with GitHub publish config
-- [x] Implement auto-update in main process
-- [x] Add deploy scripts to package.json
-- [x] Update renderer to use production URLs
-- [x] Test local build
-- [ ] (Future) Set up code signing with Apple Developer account
-
-**Build artifacts:** `apps/electron/release/`
-**Deploy command:** `pnpm --filter @repo/electron deploy` (requires GH_TOKEN)
-
-### Mobile (EAS Build)
-- [x] Create eas.json configuration with build profiles
-- [x] Update app.config.ts with production URLs
-- [x] Add deploy scripts to package.json
-- [ ] Create Expo account (expo.dev)
-- [ ] Login with `eas login`
-- [ ] Test preview build: `pnpm --filter @repo/mobile build:preview`
-- [ ] (Future) Configure App Store submission (requires Apple Developer account)
-- [ ] (Future) Configure Play Store submission (requires Google Play account)
-
-**Deploy command:** `pnpm --filter @repo/mobile deploy` (requires EAS login)
-
-### CI/CD (GitHub Actions)
-- [x] Create deploy workflow for tagged releases (.github/workflows/deploy.yml)
-- [x] Create CI workflow for PRs (.github/workflows/ci.yml)
-- [ ] Configure repository secrets (see below)
-- [ ] Test automated deployment pipeline
-
-### Root Integration
-- [x] Add deploy task to turbo.json
-- [x] Add deploy scripts to root package.json
-- [x] Test `pnpm deploy` command
-
----
-
-## Architecture Overview
-
-```
-pnpm deploy
-    |
-    +-- turbo run deploy
-            |
-            +-- @repo/server -------> Cloudflare Workers
-            |                         (livestore-app-server.contact-106.workers.dev)
-            |
-            +-- @repo/web ----------> Cloudflare Pages
-            |                         (livestore-todo.pages.dev)
-            |
-            +-- @repo/electron -----> GitHub Releases
-            |                         (DMG, NSIS, AppImage + auto-update)
-            |
-            +-- @repo/mobile -------> EAS Build
-                                      (-> App Store / Play Store)
-```
-
----
+This document covers how to deploy the LiveStore Todo app to production and preview environments.
 
 ## Prerequisites
 
-Before deploying, ensure you have accounts set up:
+### Required Accounts
 
-| Service | Purpose | Cost | Required For |
-|---------|---------|------|--------------|
-| Cloudflare | Workers + Pages hosting | Free tier | Server, Web |
-| Expo/EAS | Mobile builds | Free (30 builds/mo) | Mobile |
-| GitHub | Electron releases + CI/CD | Free | Electron, CI/CD |
-| Apple Developer | iOS App Store | $99/year | Mobile (iOS store) |
-| Google Play Developer | Android Play Store | $25 one-time | Mobile (Android store) |
+| Service | Purpose | Required For | Cost |
+|---------|---------|--------------|------|
+| [Cloudflare](https://dash.cloudflare.com/sign-up) | Workers, Pages, D1 hosting | Server, Web | Free tier available |
+| [GitHub](https://github.com) | Code hosting, Electron releases | Electron | Free |
+| [Expo/EAS](https://expo.dev/signup) | Mobile builds | Mobile | Free (30 builds/month) |
+| Apple Developer | iOS App Store | Mobile (iOS production) | $99/year |
+| Google Play Developer | Android Play Store | Mobile (Android production) | $25 one-time |
 
----
-
-## 1. Server Deployment (Cloudflare Workers)
-
-The server handles authentication (via better-auth) and LiveStore sync (via Durable Objects).
-
-### 1.1 Create Production D1 Database
+### Required Software
 
 ```bash
-# Create the production database
-wrangler d1 create livestore-auth-prod
+# Node.js 20+
+node --version
 
-# Note the database_id from the output
-```
+# pnpm 9+
+pnpm --version
 
-### 1.2 Update wrangler.toml
+# Wrangler CLI (installed as dev dependency, but can also install globally)
+npx wrangler --version
 
-Update `apps/server/wrangler.toml` with:
-- Production D1 database binding
-- Production CORS origins
-- Environment-specific configuration
-
-```toml
-name = "livestore-app-server"
-main = "src/index.ts"
-compatibility_date = "2024-12-18"
-compatibility_flags = ["nodejs_compat"]
-
-# Production D1 Database
-[[d1_databases]]
-binding = "DB"
-database_name = "livestore-auth-prod"
-database_id = "YOUR_PRODUCTION_DATABASE_ID"
-
-# Durable Objects for LiveStore sync
-[[durable_objects.bindings]]
-name = "SYNC_DURABLE_OBJECT"
-class_name = "SyncBackendDO"
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["SyncBackendDO"]
-
-# Environment variables
-[vars]
-CORS_ORIGINS = "https://livestore-todo.pages.dev"
-BETTER_AUTH_URL = "https://livestore-app-server.workers.dev"
-
-# Development environment override
-[env.dev]
-[[env.dev.d1_databases]]
-binding = "DB"
-database_name = "livestore-auth"
-database_id = "YOUR_DEV_DATABASE_ID"
-
-[env.dev.vars]
-CORS_ORIGINS = "http://localhost:5173,http://localhost:5174"
-BETTER_AUTH_URL = "http://localhost:8787"
-```
-
-### 1.3 Run Production Migrations
-
-```bash
-# Apply migrations to production database
-pnpm --filter @repo/server db:migrate:prod
-```
-
-### 1.4 Deploy
-
-```bash
-# Deploy to production
-pnpm --filter @repo/server deploy
-```
-
-The server will be available at: `https://livestore-app-server.workers.dev`
-
----
-
-## 2. Web Deployment (Cloudflare Pages)
-
-The web app is a Vite SPA deployed to Cloudflare Pages.
-
-### 2.1 Create Pages Configuration
-
-Create `apps/web/wrangler.toml`:
-
-```toml
-name = "livestore-todo"
-pages_build_output_dir = "dist"
-
-[vars]
-VITE_SYNC_URL = "https://livestore-app-server.workers.dev/sync"
-VITE_API_URL = "https://livestore-app-server.workers.dev"
-```
-
-### 2.2 Update Build Configuration
-
-Ensure `apps/web/package.json` has the deploy script:
-
-```json
-{
-  "scripts": {
-    "deploy": "pnpm build && wrangler pages deploy dist --project-name=livestore-todo"
-  }
-}
-```
-
-### 2.3 Deploy
-
-```bash
-# First deployment creates the project
-pnpm --filter @repo/web deploy
-```
-
-The web app will be available at: `https://livestore-todo.pages.dev`
-
----
-
-## 3. Electron Deployment (GitHub Releases)
-
-Electron builds are published to GitHub Releases with auto-update support.
-
-### 3.1 Install Dependencies
-
-```bash
-pnpm --filter @repo/electron add electron-updater
-```
-
-### 3.2 Update electron-builder.json
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.livestore.todo",
-  "productName": "LiveStore Todo",
-  "directories": {
-    "output": "release"
-  },
-  "files": ["dist/**/*"],
-  "publish": {
-    "provider": "github",
-    "owner": "YOUR_GITHUB_USERNAME",
-    "repo": "livestore-turbo"
-  },
-  "mac": {
-    "target": ["dmg", "zip"],
-    "category": "public.app-category.productivity"
-  },
-  "win": {
-    "target": ["nsis"]
-  },
-  "linux": {
-    "target": ["AppImage"]
-  },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true
-  }
-}
-```
-
-### 3.3 Implement Auto-Update
-
-Add auto-update logic to the main process. See `apps/electron/src/main/index.ts`.
-
-### 3.4 Deploy
-
-```bash
-# Build and publish to GitHub Releases
-# Requires GH_TOKEN environment variable
-GH_TOKEN=your_token pnpm --filter @repo/electron deploy
-```
-
-### 3.5 Code Signing (Future)
-
-When you have an Apple Developer account:
-
-1. Export your Developer ID Application certificate
-2. Set environment variables:
-   - `CSC_LINK`: Path to .p12 certificate file
-   - `CSC_KEY_PASSWORD`: Certificate password
-3. For notarization, also set:
-   - `APPLE_ID`: Your Apple ID email
-   - `APPLE_APP_SPECIFIC_PASSWORD`: App-specific password
-   - `APPLE_TEAM_ID`: Your team ID
-
----
-
-## 4. Mobile Deployment (EAS Build)
-
-Mobile builds use Expo Application Services (EAS).
-
-### 4.1 Initial Setup
-
-```bash
-# Install EAS CLI globally
+# For mobile: EAS CLI
 pnpm add -g eas-cli
+eas --version
+```
 
-# Login to Expo
+### Authentication
+
+```bash
+# Cloudflare - required for server and web deployments
+npx wrangler login
+
+# Expo/EAS - required for mobile deployments
 eas login
 
-# Initialize EAS in the mobile app
-cd apps/mobile
-eas build:configure
+# GitHub - for Electron releases, set GH_TOKEN environment variable
+export GH_TOKEN=your_github_personal_access_token
 ```
 
-### 4.2 Configure eas.json
+### Secrets
 
-Create `apps/mobile/eas.json`:
+| Secret | Where | How Set |
+|--------|-------|---------|
+| `BETTER_AUTH_SECRET` | Cloudflare Workers | **Automated** - Generated and set by deploy script |
+| `GH_TOKEN` | Local environment | Manual - GitHub Personal Access Token for Electron releases |
+| `EXPO_TOKEN` | CI/CD only | Manual - For automated mobile builds in CI |
 
-```json
-{
-  "cli": {
-    "version": ">= 5.0.0"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal",
-      "ios": {
-        "simulator": false
-      }
-    },
-    "production": {
-      "distribution": "store",
-      "ios": {
-        "resourceClass": "m1-medium"
+The server deploy script automatically generates and sets `BETTER_AUTH_SECRET` if not already configured.
+
+---
+
+## Quick Start
+
+**Deploy to preview** (isolated dev environment for testing):
+
+```bash
+pnpm deploy:preview
+```
+
+**Deploy to production**:
+
+```bash
+pnpm deploy:prod
+```
+
+---
+
+## All Deploy Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm deploy:preview` | Deploy all apps to preview environment |
+| `pnpm deploy:prod` | Deploy all apps to production |
+| `pnpm deploy:server:preview` | Server to dev worker + dev D1 database |
+| `pnpm deploy:server:prod` | Server to production worker + prod D1 database |
+| `pnpm deploy:web:preview` | Web to unique preview URL (uses dev server) |
+| `pnpm deploy:web:prod` | Web to production URL |
+| `pnpm deploy:electron:preview` | Electron local build (no publish) |
+| `pnpm deploy:electron:prod` | Electron to GitHub Releases |
+| `pnpm deploy:mobile:preview` | Mobile EAS preview profile (internal distribution) |
+| `pnpm deploy:mobile:prod` | Mobile EAS production profile (app stores) |
+
+---
+
+## Environments
+
+| Environment | Server Worker | D1 Database | Web URL |
+|-------------|---------------|-------------|---------|
+| **Production** | `livestore-app-server` | `livestore-auth-prod` | `livestore-todo.pages.dev` |
+| **Preview** | `livestore-app-server-dev` | `livestore-auth-dev` | `*.livestore-todo.pages.dev` |
+
+### D1 Databases
+
+| Database | ID | Purpose |
+|----------|-----|---------|
+| `livestore-auth-prod` | `42cd6704-6261-4c5b-aed5-b55dd35d874f` | Production user accounts and sessions |
+| `livestore-auth-dev` | `eb8e983f-d33f-45e5-ba8a-59e4edbc69db` | Preview/testing user accounts |
+
+---
+
+## Server Deployment
+
+The server handles authentication (better-auth) and LiveStore sync (Durable Objects).
+
+### What the Deploy Script Does
+
+The `deploy:server:preview` and `deploy:server:prod` scripts automatically:
+
+1. Run D1 database migrations
+2. Deploy the worker
+3. Check if `BETTER_AUTH_SECRET` is configured
+4. Generate and set the secret if missing
+
+```bash
+# Preview (uses dev database)
+pnpm deploy:server:preview
+
+# Production
+pnpm deploy:server:prod
+```
+
+### Manual Database Operations
+
+```bash
+cd apps/server
+
+# Run migrations manually
+pnpm db:migrate:dev   # Dev database
+pnpm db:migrate:prod  # Production database
+
+# Query database
+npx wrangler d1 execute livestore-auth-prod --remote \
+  --command "SELECT id, name, email FROM user ORDER BY createdAt DESC LIMIT 10"
+
+npx wrangler d1 execute livestore-auth-dev --remote \
+  --command "SELECT id, name, email FROM user ORDER BY createdAt DESC LIMIT 10"
+```
+
+### Environment URLs
+
+| Environment | `BETTER_AUTH_URL` |
+|-------------|-------------------|
+| Local dev | `http://localhost:8787` (from `.dev.vars`) |
+| Preview | `https://livestore-app-server-dev.contact-106.workers.dev` |
+| Production | `https://livestore-app-server.contact-106.workers.dev` |
+
+---
+
+## Web Deployment
+
+The web app is deployed to Cloudflare Pages.
+
+### Preview
+
+```bash
+pnpm deploy:web:preview
+```
+
+Builds with `.env.preview` (pointing to dev server) and creates a unique preview URL like `https://abc123.livestore-todo.pages.dev`.
+
+### Production
+
+```bash
+pnpm deploy:web:prod
+```
+
+Builds with `.env.production` and deploys to `https://livestore-todo.pages.dev`.
+
+### Environment Files
+
+```bash
+# apps/web/.env.preview - Used by deploy:preview
+VITE_API_URL=https://livestore-app-server-dev.contact-106.workers.dev
+VITE_SYNC_URL=https://livestore-app-server-dev.contact-106.workers.dev/sync
+
+# apps/web/.env.production - Used by deploy:prod
+VITE_API_URL=https://livestore-app-server.contact-106.workers.dev
+VITE_SYNC_URL=https://livestore-app-server.contact-106.workers.dev/sync
+```
+
+---
+
+## Electron Deployment
+
+### Preview (Local Build)
+
+```bash
+pnpm deploy:electron:preview
+```
+
+Builds the app locally without publishing. Output in `apps/electron/release/`.
+
+### Production (GitHub Releases)
+
+```bash
+GH_TOKEN=your_token pnpm deploy:electron:prod
+```
+
+Builds and publishes to GitHub Releases with auto-update support.
+
+---
+
+## Mobile Deployment
+
+### Preview (Internal Distribution)
+
+```bash
+pnpm deploy:mobile:preview
+```
+
+Builds with EAS `preview` profile for internal testing (TestFlight-like).
+
+### Production (App Stores)
+
+```bash
+pnpm deploy:mobile:prod
+```
+
+Builds with EAS `production` profile for app store submission.
+
+---
+
+## Testing Deployed Sites
+
+Run Playwright E2E tests against any deployed URL:
+
+```bash
+cd apps/web
+
+# Test against preview deployment
+TEST_BASE_URL=https://abc123.livestore-todo.pages.dev \
+TEST_API_URL=https://livestore-app-server-dev.contact-106.workers.dev \
+npx playwright test --config=e2e/playwright.config.ts
+
+# Test against production
+TEST_BASE_URL=https://livestore-todo.pages.dev \
+TEST_API_URL=https://livestore-app-server.contact-106.workers.dev \
+npx playwright test --config=e2e/playwright.config.ts
+```
+
+### Test Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TEST_BASE_URL` | Web app URL to test | `http://localhost:5173` |
+| `TEST_API_URL` | API server URL for direct requests | `http://localhost:8787` |
+
+---
+
+## Deployment Workflow
+
+### Testing Changes
+
+1. Make changes to server and/or web
+2. Deploy to preview: `pnpm deploy:preview`
+3. Note the preview URL from the output
+4. Test manually in the browser
+5. Run E2E tests: `TEST_BASE_URL=<preview-url> TEST_API_URL=<dev-server> pnpm test:e2e:web`
+
+### Promoting to Production
+
+1. Deploy to production: `pnpm deploy:prod`
+2. Run E2E tests against production
+3. Monitor for issues
+
+---
+
+## Fresh Setup (New Cloudflare Account)
+
+```bash
+# 1. Login to Cloudflare
+npx wrangler login
+
+# 2. Create D1 databases
+cd apps/server
+npx wrangler d1 create livestore-auth-prod
+npx wrangler d1 create livestore-auth-dev
+
+# 3. Update apps/server/wrangler.toml with the new database IDs from step 2
+
+# 4. Deploy (migrations and secrets are handled automatically)
+cd ../..
+pnpm deploy:preview  # Test preview first
+pnpm deploy:prod     # Then production
+```
+
+---
+
+## Technical Details
+
+### Cross-Origin Cookies
+
+The server uses `SameSite=None; Secure` cookies for cross-origin authentication between the web app (Pages) and server (Workers). Configured in `apps/server/src/auth.ts`:
+
+```typescript
+advanced: {
+  useSecureCookies: true,
+  cookies: {
+    session_token: {
+      attributes: {
+        sameSite: 'none' as const,
+        secure: true,
       },
-      "android": {
-        "buildType": "app-bundle"
-      }
-    }
+    },
   },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "YOUR_APPLE_ID",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID"
-      },
-      "android": {
-        "serviceAccountKeyPath": "./google-service-account.json"
-      }
-    }
-  }
-}
+},
 ```
 
-### 4.3 Environment Configuration
+### BETTER_AUTH_SECRET
 
-Create `apps/mobile/eas.json` environment variables:
-
-```bash
-# Set production environment variables in EAS
-eas secret:create --name LIVESTORE_SYNC_URL --value "https://livestore-app-server.workers.dev/sync"
-```
-
-### 4.4 Build Commands
-
-```bash
-# Development build (for testing)
-eas build --platform all --profile development
-
-# Preview build (internal distribution)
-eas build --platform all --profile preview
-
-# Production build (for stores)
-eas build --platform all --profile production
-
-# Submit to stores
-eas submit --platform all --profile production
-```
-
-### 4.5 App Store Requirements (Future)
-
-When ready to submit to stores:
-
-**iOS (Apple Developer Account required)**:
-1. Create App Store Connect app entry
-2. Configure app metadata, screenshots, etc.
-3. Set up App Store Connect API key for automated submission
-
-**Android (Google Play Developer Account required)**:
-1. Create Google Play Console app entry
-2. Create service account for automated submission
-3. Download service account JSON key file
-
----
-
-## 5. CI/CD (GitHub Actions)
-
-Automated deployment on tagged releases.
-
-### 5.1 Create Workflow
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy All Platforms
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-env:
-  PNPM_VERSION: 9.15.0
-  NODE_VERSION: 20
-
-jobs:
-  deploy-server:
-    name: Deploy Server
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @repo/server deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-  deploy-web:
-    name: Deploy Web
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @repo/web deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-  deploy-electron:
-    name: Deploy Electron (${{ matrix.os }})
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            platform: mac
-          - os: windows-latest
-            platform: win
-          - os: ubuntu-latest
-            platform: linux
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @repo/electron deploy
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-mobile:
-    name: Deploy Mobile
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @repo/mobile deploy
-```
-
-### 5.2 Configure Secrets
-
-Add these secrets in GitHub repository settings (Settings > Secrets and variables > Actions):
-
-| Secret | Description |
-|--------|-------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers/Pages permissions |
-| `EXPO_TOKEN` | Expo access token from expo.dev |
-| `GITHUB_TOKEN` | Auto-provided by GitHub Actions |
-
-### 5.3 Create a Release
-
-```bash
-# Tag a new version
-git tag v1.0.0
-git push origin v1.0.0
-
-# This triggers the deploy workflow
-```
-
----
-
-## 6. Root Integration
-
-### 6.1 Update turbo.json
-
-Add the deploy task to `turbo.json`:
-
-```json
-{
-  "tasks": {
-    "deploy": {
-      "dependsOn": ["build"],
-      "cache": false,
-      "persistent": false
-    }
-  }
-}
-```
-
-### 6.2 Update Root package.json
-
-Add deploy scripts:
-
-```json
-{
-  "scripts": {
-    "deploy": "turbo run deploy",
-    "deploy:server": "pnpm --filter @repo/server deploy",
-    "deploy:web": "pnpm --filter @repo/web deploy",
-    "deploy:electron": "pnpm --filter @repo/electron deploy",
-    "deploy:mobile": "pnpm --filter @repo/mobile deploy"
-  }
-}
-```
-
-### 6.3 One-Command Deploy
-
-```bash
-# Deploy all platforms
-pnpm deploy
-
-# Or deploy specific platform
-pnpm deploy:server
-pnpm deploy:web
-pnpm deploy:electron
-pnpm deploy:mobile
-```
-
----
-
-## Environment Variables Summary
-
-### Server (@repo/server)
-| Variable | Development | Production |
-|----------|-------------|------------|
-| `CORS_ORIGINS` | `http://localhost:5173` | `https://livestore-todo.pages.dev` |
-| `BETTER_AUTH_URL` | `http://localhost:8787` | `https://livestore-app-server.workers.dev` |
-| `BETTER_AUTH_SECRET` | (local secret) | (set in Cloudflare dashboard) |
-
-### Web (@repo/web)
-| Variable | Development | Production |
-|----------|-------------|------------|
-| `VITE_SYNC_URL` | `http://localhost:8787/sync` | `https://livestore-app-server.workers.dev/sync` |
-| `VITE_API_URL` | `http://localhost:8787` | `https://livestore-app-server.workers.dev` |
-
-### Electron (@repo/electron)
-| Variable | Development | Production |
-|----------|-------------|------------|
-| `LIVESTORE_SYNC_URL` | `http://localhost:8787/sync` | `https://livestore-app-server.workers.dev/sync` |
-| `API_URL` | `http://localhost:8787` | `https://livestore-app-server.workers.dev` |
-
-### Mobile (@repo/mobile)
-| Variable | Development | Production |
-|----------|-------------|------------|
-| `LIVESTORE_SYNC_URL` | `http://localhost:8787/sync` | `https://livestore-app-server.workers.dev/sync` |
+This secret **must** be set as a Cloudflare secret (not a wrangler.toml var) to avoid CPU time limit errors. The deploy script handles this automatically.
 
 ---
 
 ## Troubleshooting
 
-### Server
-- **D1 database not found**: Ensure database_id in wrangler.toml matches your created database
-- **CORS errors**: Check CORS_ORIGINS includes the requesting domain
+### "no such table: user" Error
 
-### Web
-- **Build fails**: Run `pnpm typecheck` to check for TypeScript errors
-- **API calls fail**: Verify VITE_API_URL is set correctly for the environment
+Database migrations haven't been run:
 
-### Electron
-- **Code signing errors on macOS**: Unsigned builds show "unidentified developer" warning
-- **Auto-update not working**: Ensure publish config in electron-builder.json is correct
+```bash
+cd apps/server
+pnpm db:migrate:prod  # or db:migrate:dev
+```
 
-### Mobile
-- **EAS build fails**: Check `eas build:list` for detailed logs
-- **Expo account issues**: Run `eas whoami` to verify login status
+### Users Created But Not Logged In
+
+Check if cookies have `SameSite=None`:
+
+```bash
+curl -i -X POST https://livestore-app-server.contact-106.workers.dev/api/auth/sign-up/email \
+  -H "Content-Type: application/json" \
+  -H "Origin: https://livestore-todo.pages.dev" \
+  -d '{"email":"test@example.com","password":"password123","name":"Test"}'
+```
+
+Look for `SameSite=None` in the `Set-Cookie` header.
+
+### 503 / Error 1102 from Worker
+
+This usually means the worker exceeded CPU limits. Check:
+
+1. That `BETTER_AUTH_SECRET` is set as a **secret**, not a var
+2. Worker logs: `cd apps/server && npx wrangler tail`
+3. Health endpoint: `curl https://livestore-app-server.contact-106.workers.dev/`
+
+### Preview Using Wrong Server
+
+Ensure you deployed both server and web to preview:
+
+```bash
+pnpm deploy:server:preview  # First
+pnpm deploy:web:preview     # Then
+```
+
+The web preview must be built with `.env.preview` to point to the dev server.

@@ -12,7 +12,8 @@
     "build:dev": "eas build --profile development --platform all",
     "build:preview": "eas build --profile preview --platform all",
     "build:production": "eas build --profile production --platform all",
-    "deploy": "eas build --profile production --platform all --non-interactive",
+    "deploy:preview": "eas build --profile preview --platform all --non-interactive",
+    "deploy:prod": "eas build --profile production --platform all --non-interactive",
     "submit": "eas submit --platform all --profile production"
   },
   "dependencies": {
