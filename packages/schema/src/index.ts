@@ -65,8 +65,10 @@ export const schema = makeSchema({ events, state })
 
 // Sync payload schema for authentication
 // - authToken: User ID for store identification
-// - cookie: Optional session cookie for mobile auth (web uses native cookie headers)
+// - cookie: Optional session cookie for mobile auth (via expo plugin)
+// - bearerToken: Optional bearer token for Electron auth (via bearer plugin)
 export const SyncPayload = Schema.Struct({
   authToken: Schema.String,
   cookie: Schema.optional(Schema.String),
+  bearerToken: Schema.optional(Schema.String),
 })

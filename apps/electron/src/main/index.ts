@@ -83,6 +83,7 @@ function setupAutoUpdater() {
 // =============================================================================
 function createWindow() {
   // Intercept requests to add Origin header for auth requests (file:// has no origin)
+  // This is needed for CORS validation on the server
   session.defaultSession.webRequest.onBeforeSendHeaders(
     { urls: [`${effectiveApiUrl}/*`] },
     (details, callback) => {
@@ -92,32 +93,6 @@ function createWindow() {
           : 'https://livestore-todo.pages.dev'
       }
       callback({ requestHeaders: details.requestHeaders })
-    }
-  )
-
-  // Fix cookie handling for cross-origin requests from file://
-  // Set cookies to be accessible from file:// protocol
-  session.defaultSession.webRequest.onHeadersReceived(
-    { urls: [`${effectiveApiUrl}/*`] },
-    (details, callback) => {
-      const responseHeaders = { ...details.responseHeaders }
-
-      // Modify Set-Cookie headers to work with file:// protocol
-      if (responseHeaders['set-cookie'] || responseHeaders['Set-Cookie']) {
-        const cookies = responseHeaders['set-cookie'] || responseHeaders['Set-Cookie']
-        if (cookies) {
-          const modifiedCookies = cookies.map((cookie: string) => {
-            // Remove SameSite=Lax/Strict and add SameSite=None; Secure
-            // Also remove Domain restrictions for file:// compatibility
-            return `${cookie.replace(/;\s*SameSite=\w+/gi, '').replace(/;\s*Domain=[^;]+/gi, '')}; SameSite=None`
-          })
-          responseHeaders['Set-Cookie'] = modifiedCookies
-          // Remove lowercase version to avoid duplicates (set to empty array instead of delete for performance)
-          ;(responseHeaders as Record<string, string[] | undefined>)['set-cookie'] = undefined
-        }
-      }
-
-      callback({ responseHeaders })
     }
   )
 

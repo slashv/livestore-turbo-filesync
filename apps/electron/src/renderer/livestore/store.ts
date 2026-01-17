@@ -3,6 +3,7 @@ import LiveStoreSharedWorker from '@livestore/adapter-web/shared-worker?sharedwo
 import { useStore } from '@livestore/react'
 import { SyncPayload, schema } from '@repo/schema'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
+import { getToken } from '../lib/auth-client'
 import LiveStoreWorker from './worker?worker'
 
 // Note: Sync backend is configured in worker.ts, not here
@@ -14,12 +15,18 @@ const adapter = makePersistedAdapter({
 
 // Accept userId as parameter - each user gets their own store
 export function useAppStore(userId: string) {
+  // Get bearer token for Electron auth (via better-auth bearer plugin)
+  const bearerToken = getToken()
+
   return useStore({
     storeId: userId,
     schema,
     adapter,
     batchUpdates,
     syncPayloadSchema: SyncPayload,
-    syncPayload: { authToken: userId },
+    syncPayload: {
+      authToken: userId,
+      bearerToken: bearerToken ?? undefined,
+    },
   })
 }

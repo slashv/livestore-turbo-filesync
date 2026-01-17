@@ -70,15 +70,29 @@ app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
   }
 })
 
-// Helper to extract cookie from headers or payload
-function extractCookie(headers: ReadonlyMap<string, string>, payload: unknown): string | undefined {
-  // Try cookie from HTTP headers first (web/electron - sent automatically by browser)
-  const headerCookie = headers.get('cookie')
-  if (headerCookie) return headerCookie
+// Auth credentials extracted from headers or payload
+type AuthCredentials = { type: 'cookie'; value: string } | { type: 'bearer'; value: string }
 
-  // Fall back to cookie from syncPayload (mobile - passed explicitly)
+// Helper to extract auth credentials from headers or payload
+// Priority: 1) Bearer token from payload (Electron), 2) Cookie from headers (web), 3) Cookie from payload (mobile)
+function extractAuthCredentials(
+  headers: ReadonlyMap<string, string>,
+  payload: unknown
+): AuthCredentials | undefined {
+  // 1. Check for bearer token in payload (Electron)
+  if (payload && typeof payload === 'object' && 'bearerToken' in payload) {
+    const bearerToken = (payload as { bearerToken?: string }).bearerToken
+    if (bearerToken) return { type: 'bearer', value: bearerToken }
+  }
+
+  // 2. Try cookie from HTTP headers (web - sent automatically by browser)
+  const headerCookie = headers.get('cookie')
+  if (headerCookie) return { type: 'cookie', value: headerCookie }
+
+  // 3. Fall back to cookie from syncPayload (mobile - passed explicitly via expo plugin)
   if (payload && typeof payload === 'object' && 'cookie' in payload) {
-    return (payload as { cookie?: string }).cookie
+    const cookie = (payload as { cookie?: string }).cookie
+    if (cookie) return { type: 'cookie', value: cookie }
   }
 
   return undefined
@@ -94,21 +108,30 @@ app.all('/sync', async (c) => {
 
   const auth = createAuth(c.env)
 
-  // Validate session from cookies (headers for web, payload for mobile)
+  // Validate session from cookies or bearer tokens
+  // - Web: Cookie from headers (automatic)
+  // - Mobile: Cookie from syncPayload (via expo plugin)
+  // - Electron: Bearer token from syncPayload (via bearer plugin)
   const validatePayload = async (
     payload: unknown,
     { storeId, headers }: { storeId: string; headers: ReadonlyMap<string, string> }
   ) => {
-    const cookie = extractCookie(headers, payload)
+    const credentials = extractAuthCredentials(headers, payload)
 
-    if (!cookie) {
-      throw new Error('Unauthorized: No authentication cookie')
+    if (!credentials) {
+      throw new Error('Unauthorized: No authentication credentials')
+    }
+
+    // Build headers for session validation based on credential type
+    const authHeaders = new Headers()
+    if (credentials.type === 'bearer') {
+      authHeaders.set('authorization', `Bearer ${credentials.value}`)
+    } else {
+      authHeaders.set('cookie', credentials.value)
     }
 
     // Validate session using better-auth
-    const session = await auth.api.getSession({
-      headers: new Headers({ cookie }),
-    })
+    const session = await auth.api.getSession({ headers: authHeaders })
 
     if (!session) {
       throw new Error('Unauthorized: Invalid session')

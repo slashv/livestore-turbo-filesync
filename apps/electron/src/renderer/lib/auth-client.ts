@@ -3,45 +3,42 @@ import { createAuthClient } from 'better-auth/react'
 // API URL - use env var if set (production), otherwise default to localhost
 const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 
-const TOKEN_KEY = 'livestore-auth-token'
+const TOKEN_KEY = 'livestore-bearer-token'
 
-// Custom fetch that adds token header for Electron
-const customFetch: typeof fetch = async (input, init) => {
-  const token = localStorage.getItem(TOKEN_KEY)
-  const headers = new Headers(init?.headers)
+// Get stored bearer token
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY)
+}
 
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
-
-  const response = await fetch(input, { ...init, headers })
-
-  // If sign-in or sign-up response, save the token
-  const url =
-    typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url
-  if ((url.includes('/sign-in') || url.includes('/sign-up')) && response.ok) {
-    try {
-      const cloned = response.clone()
-      const data = await cloned.json()
-      if (data.token) {
-        localStorage.setItem(TOKEN_KEY, data.token)
-      }
-    } catch {
-      // Ignore JSON parse errors
-    }
-  }
-
-  return response
+// Clear stored bearer token
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY)
 }
 
 export const authClient = createAuthClient({
   baseURL,
   fetchOptions: {
-    customFetchImpl: customFetch,
+    // Capture bearer token from response headers on successful auth
+    onSuccess: (ctx) => {
+      const authToken = ctx.response.headers.get('set-auth-token')
+      if (authToken) {
+        localStorage.setItem(TOKEN_KEY, authToken)
+      }
+    },
+    // Send bearer token with all requests
+    auth: {
+      type: 'Bearer',
+      token: () => getToken() ?? '',
+    },
   },
 })
 
-export const { signIn, signOut, useSession } = authClient
+// Wrap signOut to also clear the token
+const originalSignOut = authClient.signOut
+export const signOut: typeof originalSignOut = async (options) => {
+  const result = await originalSignOut(options)
+  clearToken()
+  return result
+}
 
-// Helper to clear token on sign out
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
+export const { signIn, useSession } = authClient

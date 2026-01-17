@@ -1,6 +1,7 @@
 import { expo } from '@better-auth/expo'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { bearer } from 'better-auth/plugins'
 import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db/schema'
 import type { Env } from './env'
@@ -24,9 +25,9 @@ export function createAuth(env: Env) {
       enabled: true,
       minPasswordLength: 6,
     },
-    plugins: [expo()],
+    plugins: [expo(), bearer()],
     session: {
-      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      expiresIn: 60 * 60 * 24 * 90, // 90 days
       updateAge: 60 * 60 * 24, // 1 day
     },
     trustedOrigins: ['*'],
