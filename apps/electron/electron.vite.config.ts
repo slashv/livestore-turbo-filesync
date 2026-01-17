@@ -28,7 +28,19 @@ export default defineConfig({
     },
   },
   renderer: {
-    plugins: [wasm(), topLevelAwait(), react()],
+    plugins: [
+      wasm(),
+      topLevelAwait(),
+      react(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: 'node_modules/wasm-vips/lib/vips.wasm',
+            dest: 'wasm-vips',
+          },
+        ],
+      }),
+    ],
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src/renderer'),

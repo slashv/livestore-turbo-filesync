@@ -14,6 +14,7 @@
     "db:migrate:prod": "wrangler d1 migrations apply livestore-auth-prod --remote"
   },
   "dependencies": {
+    "@livestore-filesync/r2": "workspace:*",
     "@better-auth/expo": "^1.2.0",
     "@livestore/sync-cf": "catalog:",
     "better-auth": "^1.2.0",

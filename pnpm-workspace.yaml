@@ -1,10 +1,12 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "libs/livestore-filesync/packages/*"
 
 catalog:
   # LiveStore packages - update version here to update across all apps
   "@livestore/adapter-expo": "0.4.0-dev.22"
+  "@livestore/adapter-node": "0.4.0-dev.22"
   "@livestore/adapter-web": "0.4.0-dev.22"
   "@livestore/devtools-expo": "0.4.0-dev.22"
   "@livestore/devtools-vite": "0.4.0-dev.22"
@@ -12,7 +14,10 @@ catalog:
   "@livestore/peer-deps": "0.4.0-dev.22"
   "@livestore/react": "0.4.0-dev.22"
   "@livestore/sync-cf": "0.4.0-dev.22"
+  "@livestore/utils": "0.4.0-dev.22"
   "@livestore/wa-sqlite": "0.4.0-dev.22"
 
   # Effect - must match the version used by LiveStore (check livestore/pnpm-workspace.yaml)
+  "@effect/platform": "0.93.8"
+  "@effect/platform-node": "0.103.0"
   "effect": "3.19.12"
