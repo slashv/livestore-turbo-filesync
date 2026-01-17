@@ -1,11 +1,12 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config'
 
-// Production URLs
-const PRODUCTION_SERVER = 'https://livestore-app-server.contact-106.workers.dev'
+// Default to localhost for development safety
+// In production builds (EAS), these are set via eas.json environment variables
+const DEFAULT_DEV_SERVER = 'http://localhost:8787'
 
-// Use environment variables if provided, otherwise use production URLs
-// In development, set LIVESTORE_SYNC_URL=http://localhost:8787/sync
-const syncUrl = process.env.LIVESTORE_SYNC_URL ?? `${PRODUCTION_SERVER}/sync`
+// Use environment variables if provided, otherwise default to localhost (dev-safe)
+// For production, set these via eas.json or CI environment
+const syncUrl = process.env.LIVESTORE_SYNC_URL ?? `${DEFAULT_DEV_SERVER}/sync`
 const apiUrl = process.env.API_URL ?? syncUrl.replace('/sync', '')
 
 export default ({ config }: ConfigContext): ExpoConfig => ({

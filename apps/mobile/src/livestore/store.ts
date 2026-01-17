@@ -11,6 +11,9 @@ import { authClient } from '../lib/auth-client'
 const expoConfig = Constants.expoConfig?.extra ?? {}
 const syncUrl = (expoConfig.LIVESTORE_SYNC_URL as string) ?? 'http://localhost:8787/sync'
 
+// Log configured URLs on startup for debugging
+console.log('[Mobile] Sync server:', syncUrl)
+
 const adapter = makePersistedAdapter({
   sync: { backend: makeWsSync({ url: syncUrl }) },
 })

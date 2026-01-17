@@ -6,6 +6,9 @@ import * as SecureStore from 'expo-secure-store'
 const expoConfig = Constants.expoConfig?.extra ?? {}
 const baseURL = (expoConfig.API_URL as string) ?? 'http://localhost:8787'
 
+// Log configured URLs on startup for debugging
+console.log('[Mobile] Auth server:', baseURL)
+
 export const authClient = createAuthClient({
   baseURL,
   plugins: [
