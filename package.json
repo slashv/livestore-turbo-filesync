@@ -4,7 +4,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=@repo/server --filter=@repo/web",
+    "dev": "turbo run dev --filter=@repo/server --filter=@repo/web --filter=@repo/electron --filter=@repo/mobile",
     "dev:web": "turbo run dev --filter=@repo/server --filter=@repo/web",
     "dev:mobile": "pnpm --filter @repo/mobile start",
     "dev:electron": "turbo run dev --filter=@repo/electron",
