@@ -332,6 +332,9 @@ importers:
       better-auth:
         specifier: ^1.2.0
         version: 1.4.13(drizzle-kit@0.30.6)(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260115.0)(@opentelemetry/api@1.9.0)(@types/react@19.2.8)(expo-sqlite@16.0.10(expo@54.0.31(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(kysely@0.28.9)(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.0.8)(jiti@1.21.7)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      effect:
+        specifier: 'catalog:'
+        version: 3.19.12
       react:
         specifier: ^19.0.0
         version: 19.2.3

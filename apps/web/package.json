@@ -29,6 +29,7 @@
     "@repo/schema": "workspace:*",
     "@tanstack/react-router": "^1.93.0",
     "better-auth": "^1.2.0",
+    "effect": "catalog:",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "wasm-vips": "^0.0.16"

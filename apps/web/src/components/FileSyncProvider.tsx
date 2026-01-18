@@ -1,7 +1,23 @@
 import { initFileSync } from '@livestore-filesync/core'
+import { createImagePreprocessor } from '@livestore-filesync/image/preprocessor'
+import { initThumbnails } from '@livestore-filesync/image/thumbnails'
 import { layer as opfsLayer } from '@livestore-filesync/opfs'
 import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { useAppStore } from '~/livestore/store'
+
+// Custom locateFile for wasm-vips to find the wasm file
+// In dev mode, Vite serves node_modules files from /@fs/ prefix
+const vipsLocateFile = (path: string): string => {
+  if (path.endsWith('.wasm')) {
+    // In production, viteStaticCopy copies the file to /wasm-vips/
+    // In dev, we serve directly from node_modules via Vite's fs access
+    if (import.meta.env.DEV) {
+      return `/node_modules/wasm-vips/lib/${path}`
+    }
+    return `/wasm-vips/${path}`
+  }
+  return path
+}
 
 interface FileSyncProviderProps {
   userId: string
@@ -25,25 +41,37 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
 
     console.log('[FileSyncProvider] Initializing FileSync...')
 
-    // Initialize file sync (without image preprocessing for now - wasm-vips has issues in dev)
+    // Initialize file sync with image preprocessing
     disposersRef.current.fileSync = initFileSync(store, {
       fileSystem: opfsLayer(),
       remote: {
         signerBaseUrl: '/api',
       },
+      options: {
+        preprocessors: {
+          'image/*': createImagePreprocessor({
+            maxDimension: 1500,
+            quality: 85,
+            format: 'jpeg',
+            vipsOptions: {
+              locateFile: vipsLocateFile,
+            },
+          }),
+        },
+      },
     })
 
     console.log('[FileSyncProvider] FileSync initialized')
 
-    // Skip thumbnail initialization for now - wasm-vips has issues in dev
-    // disposersRef.current.thumbnails = initThumbnails(store, {
-    //   sizes: { small: 200, medium: 400 },
-    //   format: 'webp',
-    //   fileSystem: opfsLayer(),
-    //   workerUrl: new URL('../workers/thumbnail.worker.ts', import.meta.url),
-    // })
+    // Initialize thumbnail generation
+    disposersRef.current.thumbnails = initThumbnails(store, {
+      sizes: { small: 200, medium: 400 },
+      format: 'webp',
+      fileSystem: opfsLayer(),
+      workerUrl: new URL('../workers/thumbnail.worker.ts', import.meta.url),
+    })
 
-    console.log('[FileSyncProvider] Setting ready=true')
+    console.log('[FileSyncProvider] Thumbnails initialized, setting ready=true')
     setReady(true)
 
     // Don't return a cleanup function - let the singleton persist

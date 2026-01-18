@@ -61,7 +61,7 @@ test.describe
       }
     })
 
-    test('complete registration flow: sign up, verify logged in, create todo', async () => {
+    test('complete registration flow: sign up, verify logged in, see gallery', async () => {
       // Step 1: Verify we're on the login screen
       await expect(window.getByTestId('email-input')).toBeVisible({ timeout: 15000 })
       await expect(window.getByRole('heading', { name: 'Sign In' })).toBeVisible()
@@ -81,30 +81,8 @@ test.describe
       // Step 4: Submit registration
       await window.getByTestId('register-button').click()
 
-      // Step 5: Verify we're logged in (should see todo input)
-      await expect(window.getByTestId('todo-input')).toBeVisible({ timeout: 15000 })
-
-      // Delete the default "Welcome to livestore" todo first
-      const welcomeTodo = window.locator('[data-testid^="todo-item-"]', {
-        hasText: 'Welcome to livestore',
-      })
-      if (await welcomeTodo.isVisible()) {
-        await welcomeTodo.locator('[data-testid^="todo-delete-"]').click()
-        await expect(welcomeTodo).not.toBeVisible({ timeout: 3000 })
-      }
-
-      // Step 6: Create a todo to verify full functionality
-      const todoText = 'E2E Registration Test Todo'
-      await window.getByTestId('todo-input').fill(todoText)
-      await window.getByTestId('todo-input').press('Enter')
-
-      // Verify todo appears in list
-      await expect(window.getByText(todoText)).toBeVisible({ timeout: 5000 })
-
-      // Clean up - delete the todo
-      const todoItem = window.locator('[data-testid^="todo-item-"]', { hasText: todoText })
-      const deleteButton = todoItem.locator('[data-testid^="todo-delete-"]')
-      await deleteButton.click()
-      await expect(window.getByText(todoText)).not.toBeVisible({ timeout: 5000 })
+      // Step 5: Verify we're logged in and see the gallery
+      await expect(window.getByTestId('gallery')).toBeVisible({ timeout: 15000 })
+      await expect(window.getByTestId('empty-state')).toBeVisible()
     })
   })
