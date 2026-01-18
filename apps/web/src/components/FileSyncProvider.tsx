@@ -74,7 +74,7 @@ export function FileSyncProvider(props: FileSyncProviderProps) {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>
+        <div className="flex justify-center items-center h-screen text-gray-400">Loading...</div>
       }
     >
       <FileSyncProviderInner {...props} />

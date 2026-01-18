@@ -34,6 +34,7 @@
     "@livestore/wa-sqlite": "catalog:",
     "@repo/core": "workspace:*",
     "@repo/schema": "workspace:*",
+    "@repo/ui": "workspace:*",
     "better-auth": "^1.2.0",
     "electron-updater": "^6.7.3",
     "react": "^19.0.0",

@@ -1,0 +1,38 @@
+{
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./components/*": {
+      "types": "./src/components/*.tsx",
+      "default": "./src/components/*.tsx"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livestore-filesync/core": "workspace:*",
+    "@livestore-filesync/image": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@repo/schema": "workspace:*"
+  },
+  "peerDependencies": {
+    "@livestore/livestore": "catalog:",
+    "@livestore/react": "catalog:",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@livestore/livestore": "catalog:",
+    "@livestore/react": "catalog:",
+    "@repo/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.7.2"
+  }
+}

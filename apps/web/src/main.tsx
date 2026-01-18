@@ -1,7 +1,6 @@
 import { StoreRegistry } from '@livestore/livestore'
 import { StoreRegistryProvider } from '@livestore/react'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { StrictMode } from 'react'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
@@ -25,9 +24,7 @@ const storeRegistry = new StoreRegistry({
 const rootElement = document.getElementById('root')!
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <StoreRegistryProvider storeRegistry={storeRegistry}>
-      <RouterProvider router={router} />
-    </StoreRegistryProvider>
-  </StrictMode>
+  <StoreRegistryProvider storeRegistry={storeRegistry}>
+    <RouterProvider router={router} />
+  </StoreRegistryProvider>
 )

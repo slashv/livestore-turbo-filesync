@@ -98,6 +98,9 @@ importers:
       '@repo/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       better-auth:
         specifier: ^1.2.0
         version: 1.4.13(drizzle-kit@0.30.6)(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260115.0)(@opentelemetry/api@1.9.0)(@types/react@19.2.8)(expo-sqlite@16.0.10(expo@54.0.31(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(kysely@0.28.9)(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.0.8)(jiti@1.21.7)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -320,6 +323,9 @@ importers:
       '@repo/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-router':
         specifier: ^1.93.0
         version: 1.150.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -519,6 +525,40 @@ importers:
         version: 5.9.3
 
   packages/tsconfig: {}
+
+  packages/ui:
+    dependencies:
+      '@livestore-filesync/core':
+        specifier: workspace:*
+        version: link:../../libs/livestore-filesync/packages/core
+      '@livestore-filesync/image':
+        specifier: workspace:*
+        version: link:../../libs/livestore-filesync/packages/image
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@repo/schema':
+        specifier: workspace:*
+        version: link:../schema
+    devDependencies:
+      '@livestore/livestore':
+        specifier: 'catalog:'
+        version: 0.4.0-dev.22(3uwpidel46yjw6yfjfdtsjpeou)
+      '@livestore/react':
+        specifier: 'catalog:'
+        version: 0.4.0-dev.22(c4hyrln2j7osqna3qzwq3caiw4)
+      '@repo/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.1.17
+      react:
+        specifier: ^19.0.0
+        version: 19.1.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
 packages:
 

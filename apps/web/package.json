@@ -27,6 +27,7 @@
     "@livestore/wa-sqlite": "catalog:",
     "@repo/core": "workspace:*",
     "@repo/schema": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@tanstack/react-router": "^1.93.0",
     "better-auth": "^1.2.0",
     "effect": "catalog:",

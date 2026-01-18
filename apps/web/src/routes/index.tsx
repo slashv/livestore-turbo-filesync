@@ -14,7 +14,7 @@ function HomePage() {
 
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 flex items-center gap-4 z-10">
+      <div className="flex absolute top-4 right-4 z-10 gap-4 items-center">
         <span className="text-sm text-gray-600">{user.email}</span>
         <button
           type="button"
