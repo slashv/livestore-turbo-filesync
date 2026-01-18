@@ -1,24 +1,6 @@
+import type { AuthContextType, User } from '@repo/ui'
 import { type ReactNode, createContext, useContext, useEffect, useState } from 'react'
 import { authClient, clearToken } from '~/lib/auth-client'
-
-interface User {
-  id: string
-  email: string
-  name: string
-}
-
-interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  signIn: (email: string, password: string) => Promise<{ error?: { message: string } }>
-  signUp: (
-    email: string,
-    password: string,
-    name: string
-  ) => Promise<{ error?: { message: string } }>
-  signOut: () => Promise<void>
-}
 
 const AuthContext = createContext<AuthContextType | null>(null)
 

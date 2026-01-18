@@ -1,10 +1,17 @@
-import { useState } from 'react'
-import { useAuth } from './AuthProvider'
+import { type ReactNode, useState } from 'react'
+import type { AuthContextType } from '../types/auth'
 
 type AuthMode = 'login' | 'register'
 
-export function LoginScreen() {
-  const { signIn, signUp } = useAuth()
+export interface LoginScreenProps {
+  /** Auth context with signIn/signUp methods */
+  auth: Pick<AuthContextType, 'signIn' | 'signUp'>
+  /** Optional content to render at the top (e.g., electron title bar spacer) */
+  headerContent?: ReactNode
+}
+
+export function LoginScreen({ auth, headerContent }: LoginScreenProps) {
+  const { signIn, signUp } = auth
   const [mode, setMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,8 +50,7 @@ export function LoginScreen() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      {/* Electron window title bar spacer */}
-      <div className="absolute top-0 left-0 right-0 h-6" />
+      {headerContent}
 
       <div className="max-w-md w-full mx-4">
         <h1 className="text-4xl font-thin text-center text-rose-800 mb-8">gallery</h1>

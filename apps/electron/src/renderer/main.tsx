@@ -1,12 +1,12 @@
 import { StoreRegistry } from '@livestore/livestore'
 import { StoreRegistryProvider } from '@livestore/react'
+import { LoginScreen } from '@repo/ui'
 import { StrictMode, Suspense } from 'react'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { AuthProvider, useAuth } from './components/AuthProvider'
 import { FileSyncProvider } from './components/FileSyncProvider'
 import { Gallery } from './components/Gallery'
-import { LoginScreen } from './components/LoginScreen'
 import './styles.css'
 
 // Create store registry with batch updates for React
@@ -50,7 +50,15 @@ function AuthGate() {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen />
+    return (
+      <LoginScreen
+        auth={useAuth()}
+        headerContent={
+          // Electron window title bar spacer
+          <div className="absolute top-0 left-0 right-0 h-6" />
+        }
+      />
+    )
   }
 
   return (

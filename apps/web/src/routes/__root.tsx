@@ -1,7 +1,7 @@
+import { LoginScreen } from '@repo/ui'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { AuthProvider, useAuth } from '~/components/AuthProvider'
-import { LoginScreen } from '~/components/LoginScreen'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -19,7 +19,7 @@ function AuthGate() {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen />
+    return <LoginScreen auth={useAuth()} />
   }
 
   return <Outlet />
