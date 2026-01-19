@@ -1,0 +1,108 @@
+appId: com.livestore.todo
+---
+# Gallery E2E Test - Delete image
+# Tests: login, upload image, delete image, verify removal
+
+# Clear keychain
+- clearKeychain
+
+# Clear app state
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Register a unique user
+- runScript: ../scripts/register-user.js
+
+# Launch app
+- launchApp
+
+# Login
+- assertVisible: "Sign In"
+- tapOn:
+    id: "email-input"
+- inputText: ${output.testUser.email}
+- tapOn:
+    id: "password-input"
+- inputText: ${output.testUser.password}
+- tapOn:
+    id: "login-button"
+
+# Dismiss iOS "Save Password" dialog
+- runFlow:
+    when:
+      visible:
+        text: ".*assword.*"
+    commands:
+      - tapOn:
+          text: ".*ot Now.*"
+
+# Wait for gallery
+- extendedWaitUntil:
+    visible:
+      id: "gallery"
+    timeout: 15000
+
+# Verify empty state initially
+- assertVisible:
+    id: "empty-state"
+
+# Upload an image
+- tapOn:
+    id: "upload-button"
+
+# Handle permissions
+- runFlow:
+    when:
+      visible:
+        text: ".*Allow.*"
+    commands:
+      - tapOn:
+          text: "Allow Full Access"
+
+# Select from Recents
+- runFlow:
+    when:
+      visible:
+        text: "Recents"
+    commands:
+      - tapOn:
+          text: "Recents"
+
+# Tap first photo
+- runFlow:
+    when:
+      visible:
+        id: ".*Photo.*"
+    commands:
+      - tapOn:
+          id: ".*Photo.*"
+          index: 0
+
+# Wait for image card to appear
+- extendedWaitUntil:
+    visible:
+      id: "image-card-.*"
+    timeout: 30000
+
+# Test deletion
+- runFlow:
+    when:
+      visible:
+        id: "image-card-.*"
+    commands:
+      # Verify empty state is hidden
+      - assertNotVisible:
+          id: "empty-state"
+      # Tap delete button
+      - tapOn:
+          id: "delete-button-.*"
+          index: 0
+      # Verify image card is removed
+      - extendedWaitUntil:
+          notVisible:
+            id: "image-card-.*"
+          timeout: 10000
+      # Verify empty state is back
+      - assertVisible:
+          id: "empty-state"

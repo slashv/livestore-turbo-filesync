@@ -1,24 +1,144 @@
-import { StyleSheet, Text, View } from 'react-native'
-
-// Mobile gallery implementation is future work - see GALLERY_IMPLEMENTATION.md Phase 6
-// Current blockers:
-// - No @livestore-filesync/opfs support on React Native
-// - Need expo-filesystem adapter
-// - wasm-vips doesn't work on RN (thumbnails need alternative)
+import { saveFile } from '@livestore-filesync/core'
+import { ExpoFile } from '@livestore-filesync/expo'
+import { createGalleryActions, imagesQuery } from '@repo/core'
+import * as ImagePicker from 'expo-image-picker'
+import { useCallback, useState } from 'react'
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { useAppStore } from '../livestore/store'
+import { ImageCard } from './ImageCard'
 
 interface GalleryProps {
   userId: string
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const NUM_COLUMNS = 2
+const CARD_GAP = 12
+const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * (NUM_COLUMNS + 1)) / NUM_COLUMNS
+
 export function Gallery({ userId }: GalleryProps) {
+  const store = useAppStore(userId)
+  const images = store.useQuery(imagesQuery)
+  const actions = createGalleryActions(store)
+  const [isUploading, setIsUploading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handlePickImage = async () => {
+    // Request permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') {
+      console.warn('[Gallery] Media library permission denied')
+      return
+    }
+
+    // Launch image picker (gallery only, no camera)
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsMultipleSelection: true,
+    })
+
+    if (result.canceled) return
+
+    setIsUploading(true)
+
+    try {
+      for (const asset of result.assets) {
+        // Create ExpoFile from the picked image
+        const file = ExpoFile.fromUri(asset.uri, {
+          type: asset.mimeType ?? 'image/jpeg',
+          name: asset.fileName ?? `image-${Date.now()}.jpg`,
+        })
+
+        // Save file through filesync
+        const saveResult = await saveFile(file as unknown as File)
+
+        // Create image record in store
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const imageId = (globalThis as any).crypto.randomUUID() as string
+        const title = (asset.fileName ?? `Image ${Date.now()}`).replace(/\.[^/.]+$/, '')
+        actions.createImage(imageId, title, saveResult.fileId)
+      }
+    } catch (error) {
+      console.error('[Gallery] Error uploading files:', error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true)
+    // Just wait a moment - the sync is automatic
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000))
+    setRefreshing(false)
+  }, [])
+
+  const renderItem = useCallback(
+    ({ item }: { item: (typeof images)[0] }) => (
+      <View style={styles.cardWrapper}>
+        <ImageCard
+          image={item}
+          store={store}
+          onDelete={() => actions.deleteImage(item.id)}
+          onUpdateTitle={(title) => actions.updateTitle(item.id, title)}
+        />
+      </View>
+    ),
+    [store, actions]
+  )
+
+  const keyExtractor = useCallback((item: (typeof images)[0]) => item.id, [])
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Gallery</Text>
-      <Text style={styles.subtitle}>Coming Soon</Text>
-      <Text style={styles.message}>
-        Mobile gallery support requires expo-filesystem adapter. See GALLERY_IMPLEMENTATION.md for
-        details.
-      </Text>
+    <View style={styles.container} testID="gallery">
+      <Text style={styles.title}>gallery</Text>
+
+      {/* Upload button */}
+      <View style={styles.uploadContainer}>
+        <TouchableOpacity
+          style={styles.uploadButton}
+          onPress={handlePickImage}
+          disabled={isUploading}
+          testID="upload-button"
+        >
+          {isUploading ? (
+            <ActivityIndicator color="#b83f45" />
+          ) : (
+            <Text style={styles.uploadButtonText}>+ Upload Images</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Image grid */}
+      {images.length === 0 ? (
+        <View style={styles.emptyState} testID="empty-state">
+          <Text style={styles.emptyStateText}>No images yet. Upload some to get started!</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={images}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          numColumns={NUM_COLUMNS}
+          contentContainerStyle={styles.grid}
+          columnWrapperStyle={styles.row}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#b83f45" />
+          }
+          testID="image-grid"
+        />
+      )}
+
+      <Text style={styles.footer}>Synced with LiveStore FileSync</Text>
     </View>
   )
 }
@@ -26,24 +146,61 @@ export function Gallery({ userId }: GalleryProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 32,
     fontWeight: '200',
     color: '#b83f45',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 16,
-  },
-  message: {
-    fontSize: 14,
-    color: '#999',
     textAlign: 'center',
+    marginVertical: 16,
+  },
+  uploadContainer: {
+    paddingHorizontal: CARD_GAP,
+    marginBottom: 12,
+  },
+  uploadButton: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    borderStyle: 'dashed',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  uploadButtonText: {
+    color: '#6b7280',
+    fontSize: 16,
+  },
+  grid: {
+    paddingHorizontal: CARD_GAP / 2,
+    paddingBottom: 24,
+  },
+  row: {
+    justifyContent: 'flex-start',
+    gap: CARD_GAP,
+    marginHorizontal: CARD_GAP / 2,
+    marginBottom: CARD_GAP,
+  },
+  cardWrapper: {
+    width: CARD_WIDTH,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateText: {
+    color: '#9ca3af',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  footer: {
+    fontSize: 12,
+    color: '#9ca3af',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
 })

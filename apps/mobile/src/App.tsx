@@ -1,7 +1,11 @@
+import { StoreRegistry } from '@livestore/livestore'
+import { StoreRegistryProvider } from '@livestore/react'
 import { StatusBar } from 'expo-status-bar'
+import { Suspense, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './components/AuthProvider'
+import { FileSyncProvider } from './components/FileSyncProvider'
 import { Gallery } from './components/Gallery'
 import { LoginScreen } from './components/LoginScreen'
 
@@ -24,18 +28,28 @@ function AuthGate() {
     return <LoginScreen />
   }
 
-  // Mobile gallery is a placeholder - see GALLERY_IMPLEMENTATION.md Phase 6
-  return <Gallery userId={user.id} />
+  // Wrap Gallery with FileSyncProvider to enable file sync
+  return (
+    <FileSyncProvider userId={user.id}>
+      <Gallery userId={user.id} />
+    </FileSyncProvider>
+  )
 }
 
 export default function App() {
+  const [storeRegistry] = useState(() => new StoreRegistry())
+
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <SafeAreaView style={styles.container}>
-          <StatusBar style="dark" />
-          <AuthGate />
-        </SafeAreaView>
+        <Suspense fallback={<LoadingFallback />}>
+          <StoreRegistryProvider storeRegistry={storeRegistry}>
+            <SafeAreaView style={styles.container}>
+              <StatusBar style="dark" />
+              <AuthGate />
+            </SafeAreaView>
+          </StoreRegistryProvider>
+        </Suspense>
       </AuthProvider>
     </SafeAreaProvider>
   )

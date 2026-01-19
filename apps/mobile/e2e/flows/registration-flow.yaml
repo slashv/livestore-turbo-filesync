@@ -1,5 +1,7 @@
 appId: com.livestore.todo
 ---
+# Registration Flow - Tests user registration with gallery app
+
 # Clear keychain (where expo-secure-store keeps auth tokens)
 - clearKeychain
 
@@ -45,36 +47,17 @@ appId: com.livestore.todo
       - tapOn:
           text: ".*ot Now.*"
 
-# Step 5: Wait for todo screen to load (verify we're logged in)
+# Step 5: Wait for gallery to load (verify we're logged in)
+# The app now shows gallery instead of todos after login
 - extendedWaitUntil:
     visible:
-      id: "todo-input"
+      id: "gallery"
     timeout: 15000
 
-# Delete any existing todo first (the "Welcome to livestore" default)
-- tapOn:
-    id: "todo-delete-.*"
-    index: 0
+# Step 6: Verify gallery elements are visible
+- assertVisible:
+    id: "upload-button"
 
-# Step 6: Create a new todo to verify full functionality
-- tapOn:
-    id: "todo-input"
-- inputText: "E2E Registration Test Todo"
-- pressKey: Enter
-
-# Verify todo appears
-- extendedWaitUntil:
-    visible:
-      text: "E2E Registration Test Todo"
-    timeout: 5000
-
-# Clean up - delete the todo
-- tapOn:
-    id: "todo-delete-.*"
-    index: 0
-
-# Verify todo is gone
-- extendedWaitUntil:
-    notVisible:
-      text: "E2E Registration Test Todo"
-    timeout: 5000
+# Step 7: Verify empty state shows (clean user has no images)
+- assertVisible:
+    id: "empty-state"

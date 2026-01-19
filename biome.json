@@ -15,7 +15,9 @@
       ".wrangler",
       "release",
       "*.gen.ts",
-      "apps/mobile/e2e/scripts/*.js"
+      "apps/mobile/e2e/scripts/*.js",
+      "libs/livestore",
+      "libs/livestore-filesync"
     ]
   },
   "organizeImports": {

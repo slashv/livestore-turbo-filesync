@@ -1,5 +1,9 @@
 appId: com.livestore.todo
 ---
+# Gallery Flow (formerly Todo Flow)
+# This file is kept for backwards compatibility
+# Tests: login, verify gallery loads
+
 # Clear keychain (where expo-secure-store keeps auth tokens)
 - clearKeychain
 
@@ -34,41 +38,16 @@ appId: com.livestore.todo
       - tapOn:
           text: ".*ot Now.*"
 
-# Wait for todo screen to load
+# Step 2: Wait for gallery to load (app now shows gallery instead of todos)
 - extendedWaitUntil:
     visible:
-      id: "todo-input"
+      id: "gallery"
     timeout: 15000
 
-# Delete any existing todo first (the "Welcome to livestore" default)
-- tapOn:
-    id: "todo-delete-.*"
-    index: 0
+# Step 3: Verify gallery elements are present
+- assertVisible:
+    id: "upload-button"
 
-# Step 2: Create a new todo
-- tapOn:
-    id: "todo-input"
-- inputText: "E2E Test Todo"
-- pressKey: Enter
-
-# Verify todo appears
-- extendedWaitUntil:
-    visible:
-      text: "E2E Test Todo"
-    timeout: 5000
-
-# Step 3: Mark todo as complete
-- tapOn:
-    id: "todo-checkbox-.*"
-    index: 0
-
-# Step 4: Delete the todo
-- tapOn:
-    id: "todo-delete-.*"
-    index: 0
-
-# Verify todo is gone
-- extendedWaitUntil:
-    notVisible:
-      text: "E2E Test Todo"
-    timeout: 5000
+# Step 4: Verify empty state shows (no images yet)
+- assertVisible:
+    id: "empty-state"

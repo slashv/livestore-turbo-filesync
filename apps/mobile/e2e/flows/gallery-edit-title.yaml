@@ -1,0 +1,110 @@
+appId: com.livestore.todo
+---
+# Gallery E2E Test - Edit image title
+# Tests: login, upload image, edit title, verify title changes
+
+# Clear keychain
+- clearKeychain
+
+# Clear app state
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Register a unique user
+- runScript: ../scripts/register-user.js
+
+# Launch app
+- launchApp
+
+# Login
+- assertVisible: "Sign In"
+- tapOn:
+    id: "email-input"
+- inputText: ${output.testUser.email}
+- tapOn:
+    id: "password-input"
+- inputText: ${output.testUser.password}
+- tapOn:
+    id: "login-button"
+
+# Dismiss iOS "Save Password" dialog if it appears
+- runFlow:
+    when:
+      visible:
+        text: ".*assword.*"
+    commands:
+      - tapOn:
+          text: ".*ot Now.*"
+
+# Wait for gallery
+- extendedWaitUntil:
+    visible:
+      id: "gallery"
+    timeout: 15000
+
+# Upload an image first
+- tapOn:
+    id: "upload-button"
+
+# Handle permissions
+- runFlow:
+    when:
+      visible:
+        text: ".*Allow.*"
+    commands:
+      - tapOn:
+          text: "Allow Full Access"
+
+# Select from Recents
+- runFlow:
+    when:
+      visible:
+        text: "Recents"
+    commands:
+      - tapOn:
+          text: "Recents"
+
+# Tap first photo
+- runFlow:
+    when:
+      visible:
+        id: ".*Photo.*"
+    commands:
+      - tapOn:
+          id: ".*Photo.*"
+          index: 0
+
+# Wait for image card
+- extendedWaitUntil:
+    visible:
+      id: "image-card-.*"
+    timeout: 30000
+
+# Test title editing
+- runFlow:
+    when:
+      visible:
+        id: "image-title-.*"
+    commands:
+      # Tap on title to edit
+      - tapOn:
+          id: "image-title-.*"
+          index: 0
+      # Wait for input to appear
+      - extendedWaitUntil:
+          visible:
+            id: "title-input-.*"
+          timeout: 5000
+      # Clear and type new title
+      - eraseText:
+          charactersToErase: 50
+      - inputText: "Edited Test Title"
+      - pressKey: Enter
+      # Verify title changed
+      - assertVisible:
+          text: "Edited Test Title"
+      # Clean up - delete the image
+      - tapOn:
+          id: "delete-button-.*"
+          index: 0

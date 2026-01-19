@@ -40,6 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   web: {
     favicon: './assets/favicon.png',
   },
+  plugins: ['expo-secure-store'],
   extra: {
     // API URL for authentication
     API_URL: apiUrl,
