@@ -190,7 +190,7 @@ export function ImageCard({
         </button>
 
         {/* Debug info */}
-        <details className="mt-2 text-xs text-gray-500">
+        <details open className="mt-2 text-xs text-gray-500">
           <summary className="cursor-pointer">Debug</summary>
           <table className="mt-1 w-full text-left">
             <tbody>

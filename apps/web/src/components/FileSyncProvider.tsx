@@ -6,12 +6,11 @@ import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { useAppStore } from '~/livestore/store'
 
 interface FileSyncProviderProps {
-  userId: string
   children: ReactNode
 }
 
-function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
-  const store = useAppStore(userId)
+function FileSyncProviderInner({ children }: FileSyncProviderProps) {
+  const store = useAppStore()
   const [ready, setReady] = useState(false)
   const disposersRef = useRef<{ fileSync?: () => Promise<void>; thumbnails?: () => Promise<void> }>(
     {}

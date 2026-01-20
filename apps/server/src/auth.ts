@@ -31,10 +31,8 @@ export function createAuth(env: Env) {
       updateAge: 60 * 60 * 24, // 1 day
     },
     trustedOrigins: [
-      'http://localhost:8787',
-      'http://localhost:5173',
       'livestore-todo://',
-      'https://livestore-todo.pages.dev',
+      '*',
     ],
     advanced: {
       useSecureCookies: true,

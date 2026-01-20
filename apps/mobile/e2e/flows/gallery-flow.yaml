@@ -66,20 +66,13 @@ appId: com.livestore.todo
 - runFlow:
     when:
       visible:
-        text: "Recents"
+        text: "Select Photos"
     commands:
       - tapOn:
-          text: "Recents"
-
-# Tap the first photo (if available)
-- runFlow:
-    when:
-      visible:
-        id: ".*Photo.*"
-    commands:
-      - tapOn:
-          id: ".*Photo.*"
+          text: "Photo, .*"
           index: 0
+      - tapOn:
+          text: "Add"
       # Wait for image to be added
       - extendedWaitUntil:
           visible:

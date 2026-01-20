@@ -3,6 +3,7 @@ import LiveStoreSharedWorker from '@livestore/adapter-web/shared-worker?sharedwo
 import { useStore } from '@livestore/react'
 import { SyncPayload, schema } from '@repo/schema'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
+import { useAuth } from '~/components/AuthProvider'
 import LiveStoreWorker from './worker?worker'
 
 // Note: Sync backend is configured in worker.ts, not here
@@ -12,14 +13,19 @@ const adapter = makePersistedAdapter({
   sharedWorker: LiveStoreSharedWorker,
 })
 
-// Accept userId as parameter - each user gets their own store
-export function useAppStore(userId: string) {
+export function useAppStore() {
+  const { user } = useAuth()
+
+  if (!user) {
+    throw new Error('useAppStore must be used when user is authenticated')
+  }
+
   return useStore({
-    storeId: userId,
+    storeId: user.id,
     schema,
     adapter,
     batchUpdates,
     syncPayloadSchema: SyncPayload,
-    syncPayload: { authToken: userId },
+    syncPayload: { authToken: user.id },
   })
 }

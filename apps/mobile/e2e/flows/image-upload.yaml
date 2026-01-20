@@ -1,0 +1,126 @@
+appId: com.livestore.todo
+---
+# Image Upload E2E Test
+# Tests: login, add image to simulator, upload via picker, verify display and sync
+# NOTE: This test is expected to fail as image upload is not currently working
+
+# Clear keychain (where expo-secure-store keeps auth tokens)
+- clearKeychain
+
+# Clear app state and stop the app
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Add test image to simulator photo library
+- addMedia:
+    - "../fixtures/test-image.png"
+
+# Register a unique user for this test run
+- runScript: ../scripts/register-user.js
+
+# Launch app fresh after registration
+- launchApp
+
+# Step 1: Login with the unique test user
+- assertVisible: "Sign In"
+- tapOn:
+    id: "email-input"
+- inputText: ${output.testUser.email}
+- tapOn:
+    id: "password-input"
+- inputText: ${output.testUser.password}
+- tapOn:
+    id: "login-button"
+
+# Dismiss iOS "Save Password" dialog if it appears
+- runFlow:
+    when:
+      visible:
+        text: ".*assword.*"
+    commands:
+      - tapOn:
+          text: ".*ot Now.*"
+
+# Step 2: Wait for gallery to load
+- extendedWaitUntil:
+    visible:
+      id: "gallery"
+    timeout: 15000
+
+# Step 3: Verify empty state shows initially
+- assertVisible:
+    id: "empty-state"
+
+# Step 4: Tap upload button to open photo picker
+- tapOn:
+    id: "upload-button"
+
+# Step 5: Handle permission dialog if it appears
+- runFlow:
+    when:
+      visible:
+        text: ".*Allow.*"
+    commands:
+      - tapOn:
+          text: "Allow Full Access"
+
+# Step 6: Wait for photo picker to appear (iOS 18+ shows "Select Photos")
+- extendedWaitUntil:
+    visible:
+      text: "Select Photos"
+    timeout: 10000
+
+# Step 7: Select the first photo using iOS-specific selectors
+# iOS 18 uses PXGGridLayout-Info, iOS 17 uses "Photo, .*"
+- runFlow:
+    when:
+      visible:
+        id: "PXGGridLayout-Info"
+    commands:
+      - tapOn:
+          id: "PXGGridLayout-Info"
+          index: 0
+
+- runFlow:
+    when:
+      notVisible:
+        id: "PXGGridLayout-Info"
+    commands:
+      - tapOn:
+          text: "Photo, .*"
+          index: 0
+
+# Tap Add button to confirm selection
+- tapOn:
+    text: "Add"
+
+# Step 8: Wait for image to appear in gallery
+- extendedWaitUntil:
+    visible:
+      id: "image-card-.*"
+    timeout: 30000
+
+# Step 9: Verify the image is displayed correctly
+- assertNotVisible:
+    id: "empty-state"
+
+- assertVisible:
+    id: "image-display-.*"
+
+# Step 10: Wait for sync to complete (image uploaded to server)
+- extendedWaitUntil:
+    visible:
+      id: "sync-status-synced"
+    timeout: 60000
+
+# Step 11: Cleanup - delete the uploaded image
+- tapOn:
+    id: "delete-button-.*"
+    index: 0
+
+# Verify image is removed and empty state returns
+- extendedWaitUntil:
+    visible:
+      id: "empty-state"
+    timeout: 10000

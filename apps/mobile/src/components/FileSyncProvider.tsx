@@ -112,7 +112,8 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
     // Get auth cookie for authenticated requests
     const cookie = authClient.getCookie()
 
-    // Initialize file sync with Expo filesystem and image preprocessing
+    // Initialize file sync with Expo filesystem
+    // NOTE: Image preprocessing is temporarily disabled to debug upload issues
     disposersRef.current.fileSync = initFileSync(store, {
       fileSystem: expoFileSystemLayer(),
       remote: {
@@ -121,14 +122,13 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
         ...(cookie ? { headers: { Cookie: cookie } } : {}),
       },
       options: {
-        preprocessors: {
-          'image/*': createExpoImagePreprocessor(),
-        },
+        // Preprocessing disabled for debugging - uncomment to re-enable
+        // preprocessors: {
+        //   'image/*': createExpoImagePreprocessor(),
+        // },
         onEvent: (event) => {
-          // Log events for debugging
-          if (event.type.includes('error')) {
-            console.error('[FileSyncProvider] Event:', event)
-          }
+          // Log all events for debugging
+          console.log('[FileSyncProvider] Event:', event.type, event)
         },
       },
     })

@@ -24,8 +24,8 @@ function HomePage() {
           Sign out
         </button>
       </div>
-      <FileSyncProvider userId={user.id}>
-        <Gallery userId={user.id} />
+      <FileSyncProvider>
+        <Gallery />
       </FileSyncProvider>
     </div>
   )
