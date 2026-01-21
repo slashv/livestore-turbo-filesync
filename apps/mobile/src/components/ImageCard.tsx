@@ -45,17 +45,12 @@ export function ImageCard({ image, store, onDelete, onUpdateTitle }: ImageCardPr
   // Resolve file URL on mount and when file updates
   // biome-ignore lint/correctness/useExhaustiveDependencies: file.updatedAt intentionally triggers re-resolution
   useEffect(() => {
-    console.log('[ImageCard] Resolving file URL for', file.id, 'path:', file.path)
     resolveFileUrl(file.id)
       .then((url) => {
-        console.log('[ImageCard] Resolved file URL:', { fileId: file.id, url })
         if (url) setSrc(url)
       })
-      .catch((error) => {
-        console.error('[ImageCard] Failed to resolve file URL:', {
-          fileId: file.id,
-          error: JSON.stringify(error, null, 2),
-        })
+      .catch(() => {
+        // File URL resolution failed - image won't display
       })
   }, [file.id, file.updatedAt])
 
