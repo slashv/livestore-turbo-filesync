@@ -130,7 +130,7 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
         // },
         onEvent: (event) => {
           // Log all events for debugging
-          console.log('[FileSyncProvider] Event:', event.type, event)
+          console.log('[FileSyncProvider] Event:', event.type, JSON.stringify(event))
         },
       },
     })

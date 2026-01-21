@@ -32,7 +32,7 @@ export function Gallery({ userId }: GalleryProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  const handlePickImage = async () => {
+  const handlePickImageDebug = async () => {
     console.log('[Gallery] handlePickImage started')
 
     // Request permissions
@@ -143,6 +143,36 @@ export function Gallery({ userId }: GalleryProps) {
     } finally {
       setIsUploading(false)
       console.log('[Gallery] handlePickImage completed')
+    }
+  }
+
+  const handlePickImage = async () => {
+    // Request permissions
+    await ImagePicker.requestMediaLibraryPermissionsAsync()
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsMultipleSelection: true,
+    })
+
+    if (result.canceled) return
+
+    try {
+      for (const asset of result.assets) {
+        const file = ExpoFile.fromUri(asset.uri, {
+          type: asset.mimeType ?? 'image/jpeg',
+          name: asset.fileName ?? `image-${Date.now()}.jpg`,
+        })
+
+        const saveResult = await saveFile(file as unknown as File)
+
+        const imageId = (globalThis as any).crypto.randomUUID() as string
+        const title = (asset.fileName ?? `Image ${Date.now()}`).replace(/\.[^/.]+$/, '')
+        actions.createImage(imageId, title, saveResult.fileId)
+      }
+    } catch (error) {
+      console.error('[Gallery] Error uploading files:', error)
     }
   }
 

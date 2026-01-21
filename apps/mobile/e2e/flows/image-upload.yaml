@@ -43,10 +43,8 @@ appId: com.livestore.todo
           text: ".*ot Now.*"
 
 # Step 2: Wait for gallery to load
-- extendedWaitUntil:
-    visible:
-      id: "gallery"
-    timeout: 15000
+- assertVisible:
+    id: "gallery"
 
 # Step 3: Verify empty state shows initially
 - assertVisible:
@@ -66,10 +64,8 @@ appId: com.livestore.todo
           text: "Allow Full Access"
 
 # Step 6: Wait for photo picker to appear (iOS 18+ shows "Select Photos")
-- extendedWaitUntil:
-    visible:
-      text: "Select Photos"
-    timeout: 10000
+- assertVisible:
+    text: "Select Photos"
 
 # Step 7: Select the first photo using iOS-specific selectors
 # iOS 18 uses PXGGridLayout-Info, iOS 17 uses "Photo, .*"
@@ -99,7 +95,7 @@ appId: com.livestore.todo
 - extendedWaitUntil:
     visible:
       id: "image-card-.*"
-    timeout: 30000
+    timeout: 10000
 
 # Step 9: Verify the image is displayed correctly
 - assertNotVisible:
@@ -112,7 +108,7 @@ appId: com.livestore.todo
 - extendedWaitUntil:
     visible:
       id: "sync-status-synced"
-    timeout: 60000
+    timeout: 20000
 
 # Step 11: Cleanup - delete the uploaded image
 - tapOn:
@@ -120,7 +116,5 @@ appId: com.livestore.todo
     index: 0
 
 # Verify image is removed and empty state returns
-- extendedWaitUntil:
-    visible:
-      id: "empty-state"
-    timeout: 10000
+- assertVisible:
+    id: "empty-state"
