@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native'
 import { useAppStore } from '../livestore/store'
+import { useAuth } from './AuthProvider'
 import { ImageCard } from './ImageCard'
 
 interface GalleryProps {
@@ -29,122 +30,9 @@ export function Gallery({ userId }: GalleryProps) {
   const store = useAppStore(userId)
   const images = store.useQuery(imagesQuery)
   const actions = createGalleryActions(store)
+  const { user, signOut } = useAuth()
   const [isUploading, setIsUploading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-
-  const handlePickImageDebug = async () => {
-    console.log('[Gallery] handlePickImage started')
-
-    // Request permissions
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-    console.log('[Gallery] Permission status:', status)
-    if (status !== 'granted') {
-      console.warn('[Gallery] Media library permission denied')
-      return
-    }
-
-    // Launch image picker (gallery only, no camera)
-    console.log('[Gallery] Launching image picker...')
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsMultipleSelection: true,
-    })
-    console.log('[Gallery] Raw image picker result keys:', Object.keys(result))
-
-    console.log(
-      '[Gallery] Image picker result:',
-      result.canceled ? 'canceled' : `${result.assets?.length} assets`
-    )
-
-    if (result.canceled) return
-
-    setIsUploading(true)
-
-    try {
-      console.log('[Gallery] expo-file-system module import test...')
-      try {
-        const fsModule = await import('expo-file-system')
-        console.log('[Gallery] expo-file-system keys:', Object.keys(fsModule))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const defaultKeys = (fsModule as any).default ? Object.keys((fsModule as any).default) : []
-        if (defaultKeys.length > 0) {
-          console.log('[Gallery] expo-file-system default keys:', defaultKeys)
-        }
-      } catch (fsError) {
-        console.error('[Gallery] expo-file-system import failed:', fsError)
-      }
-
-      for (const asset of result.assets) {
-        console.log('[Gallery] Processing asset:', {
-          uri: asset.uri,
-          mimeType: asset.mimeType,
-          fileName: asset.fileName,
-          width: asset.width,
-          height: asset.height,
-          fileSize: asset.fileSize,
-          type: asset.type,
-        })
-        console.log('[Gallery] Asset keys:', Object.keys(asset))
-
-        // Create ExpoFile from the picked image
-        const file = ExpoFile.fromUri(asset.uri, {
-          type: asset.mimeType ?? 'image/jpeg',
-          name: asset.fileName ?? `image-${Date.now()}.jpg`,
-        })
-        console.log('[Gallery] Created ExpoFile:', {
-          uri: file.uri,
-          name: file.name,
-          type: file.type,
-        })
-
-        // Test reading the file first to diagnose issues
-        try {
-          console.log('[Gallery] Testing file read via arrayBuffer()...')
-          const testBuffer = await file.arrayBuffer()
-          console.log('[Gallery] File read successful, size:', testBuffer.byteLength)
-        } catch (readError) {
-          console.error('[Gallery] File read FAILED:', readError)
-          if (readError instanceof Error) {
-            console.error('[Gallery] Read error details:', {
-              name: readError.name,
-              message: readError.message,
-              stack: readError.stack,
-            })
-          }
-          throw readError
-        }
-
-        // Save file through filesync
-        console.log('[Gallery] Calling saveFile...')
-        const saveResult = await saveFile(file as unknown as File)
-        console.log('[Gallery] saveFile result:', saveResult)
-
-        // Create image record in store
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const imageId = (globalThis as any).crypto.randomUUID() as string
-        const title = (asset.fileName ?? `Image ${Date.now()}`).replace(/\.[^/.]+$/, '')
-        console.log('[Gallery] Creating image record:', {
-          imageId,
-          title,
-          fileId: saveResult.fileId,
-        })
-        actions.createImage(imageId, title, saveResult.fileId)
-        console.log('[Gallery] Image record created successfully')
-      }
-    } catch (error) {
-      console.error('[Gallery] Error uploading files:', error)
-      // Log more details about the error
-      if (error instanceof Error) {
-        console.error('[Gallery] Error name:', error.name)
-        console.error('[Gallery] Error message:', error.message)
-        console.error('[Gallery] Error stack:', error.stack)
-      }
-    } finally {
-      setIsUploading(false)
-      console.log('[Gallery] handlePickImage completed')
-    }
-  }
 
   const handlePickImage = async () => {
     // Request permissions
@@ -158,6 +46,7 @@ export function Gallery({ userId }: GalleryProps) {
 
     if (result.canceled) return
 
+    setIsUploading(true)
     try {
       for (const asset of result.assets) {
         const file = ExpoFile.fromUri(asset.uri, {
@@ -173,6 +62,8 @@ export function Gallery({ userId }: GalleryProps) {
       }
     } catch (error) {
       console.error('[Gallery] Error uploading files:', error)
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -201,6 +92,16 @@ export function Gallery({ userId }: GalleryProps) {
 
   return (
     <View style={styles.container} testID="gallery">
+      {/* Header with user info and sign out */}
+      <View style={styles.header}>
+        <Text style={styles.userEmail} numberOfLines={1}>
+          {user?.email}
+        </Text>
+        <TouchableOpacity onPress={signOut} testID="sign-out-button">
+          <Text style={styles.signOutText}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.title}>gallery</Text>
 
       {/* Upload button */}
@@ -248,6 +149,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 16,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#6b7280',
+    flexShrink: 1,
+  },
+  signOutText: {
+    fontSize: 14,
+    color: '#b83f45',
   },
   title: {
     fontSize: 32,
