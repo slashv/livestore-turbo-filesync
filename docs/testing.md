@@ -71,41 +71,106 @@ Mobile tests use [Maestro](https://maestro.mobile.dev/) to automate the iOS simu
    curl -Ls "https://get.maestro.mobile.dev" | bash
    ```
 
-2. **Install Java (required by Maestro):**
+2. **Install Java 17 (required by Maestro):**
    ```bash
    brew install openjdk@17
    ```
 
-3. **Build and install the app on a simulator:**
+3. **Configure environment:**
+   ```bash
+   cd apps/mobile
+   cp e2e/.env.e2e.example e2e/.env.e2e
+   ```
+   
+   Edit `e2e/.env.e2e` and set `JAVA_HOME` to your Java installation path:
+   ```bash
+   # Find your Java path (macOS)
+   /usr/libexec/java_home -V
+   
+   # Or for Homebrew installations
+   ls -la /opt/homebrew/opt/openjdk*
+   ```
+   
+   Common paths:
+   | Installation | JAVA_HOME |
+   |--------------|-----------|
+   | Homebrew (Apple Silicon) | `/opt/homebrew/opt/openjdk@17` |
+   | Homebrew (Intel) | `/usr/local/opt/openjdk@17` |
+   | System Java | Output of `/usr/libexec/java_home` |
+
+4. **Build and install the app on a simulator:**
    ```bash
    cd apps/mobile
    npx expo prebuild --platform ios
    npx expo run:ios
    ```
 
-4. **Configure environment (optional):**
-   ```bash
-   cd apps/mobile
-   cp e2e/.env.e2e.example e2e/.env.e2e
-   # Edit .env.e2e if needed (e.g., different Java path)
-   ```
-
 ### Running Mobile Tests
 
 ```bash
-# Start the server first
+# 1. Start the backend server (required for user registration)
 pnpm dev:server
 
-# Start Metro bundler in another terminal
-cd apps/mobile
-pnpm start
+# 2. Start an iOS simulator (if not already running)
+open -a Simulator
+# Or boot a specific device:
+xcrun simctl boot "iPhone 16"
 
-# In another terminal, run mobile e2e tests
+# 3. Run all mobile e2e tests
 cd apps/mobile
 pnpm test:e2e
 ```
 
-The test script validates:
+### Running Individual Test Flows
+
+```bash
+cd apps/mobile
+
+# Run a specific test flow
+pnpm test:e2e e2e/flows/image-upload.yaml
+
+# Run with additional maestro options
+pnpm test:e2e e2e/flows/todo-flow.yaml --debug-output ./debug
+```
+
+### Available Test Flows
+
+| Flow | Description |
+|------|-------------|
+| `todo-flow.yaml` | Login and verify gallery loads |
+| `registration-flow.yaml` | User registration flow |
+| `gallery-flow.yaml` | Gallery functionality |
+| `image-upload.yaml` | Upload image via photo picker |
+| `gallery-edit-title.yaml` | Edit gallery item titles |
+| `gallery-delete.yaml` | Delete gallery items |
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `JAVA_HOME` | Path to Java installation | `/opt/homebrew/opt/openjdk@17` |
+| `MAESTRO_DRIVER_STARTUP_TIMEOUT` | Driver startup timeout (ms) | `120000` |
+
+### Troubleshooting
+
+**"No devices connected"**
+- Start an iOS simulator: `open -a Simulator`
+- List available simulators: `xcrun simctl list devices available`
+
+**"iOS driver not ready in time"**
+- Increase timeout in `e2e/.env.e2e`: `MAESTRO_DRIVER_STARTUP_TIMEOUT=180000`
+
+**"Failed to connect to localhost:8787"**
+- Start the backend server: `pnpm dev:server` (from project root)
+
+**"App not installed on simulator"**
+- Build and install: `cd apps/mobile && npx expo run:ios`
+
+**"Java not found"**
+- Verify Java is installed: `java -version`
+- Check `JAVA_HOME` is set correctly in `e2e/.env.e2e`
+
+The test script (`e2e/run-e2e.sh`) validates all prerequisites before running tests:
 - Maestro installation
 - Java installation
 - Running iOS simulator

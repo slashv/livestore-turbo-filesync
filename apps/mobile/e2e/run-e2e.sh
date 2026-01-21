@@ -81,4 +81,10 @@ echo "Running Maestro e2e tests..."
 echo ""
 
 # Run Maestro tests
-maestro test e2e/flows/ "$@"
+# If first argument is a file path, run that specific flow
+# Otherwise, run all flows in e2e/flows/
+if [ -n "$1" ] && [ -f "$1" ]; then
+  maestro test "$@"
+else
+  maestro test e2e/flows/ "$@"
+fi
