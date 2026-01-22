@@ -65,81 +65,133 @@ export function ImageCard({ image, store, onDelete, onUpdateTitle }: ImageCardPr
     setIsEditing(false)
   }
 
+  // Get local file state for this specific file
+  const localFile = localFileState?.localFiles?.[file.id]
+
   return (
     <View style={styles.card} testID={`image-card-${image.id}`}>
-      <View style={styles.imageContainer}>
-        {canDisplay && src ? (
-          <>
-            <Image
-              source={{ uri: src }}
-              style={styles.image}
-              contentFit="cover"
-              transition={200}
-              testID={`image-display-${image.id}`}
-            />
-            {/* Sync status indicator overlay */}
-            {(isUploading || isDownloading) && (
-              <View
-                style={[
-                  styles.statusBadge,
-                  isUploading ? styles.uploadingBadge : styles.downloadingBadge,
-                ]}
-                testID={isUploading ? 'sync-status-uploading' : 'sync-status-downloading'}
+      <View style={styles.horizontalLayout}>
+        {/* Left side: Image (1/4 width) */}
+        <View style={styles.imageContainer}>
+          {canDisplay && src ? (
+            <>
+              <Image
+                source={{ uri: src }}
+                style={styles.image}
+                contentFit="cover"
+                transition={200}
+                testID={`image-display-${image.id}`}
+              />
+              {/* Sync status indicator overlay */}
+              {(isUploading || isDownloading) && (
+                <View
+                  style={[
+                    styles.statusBadge,
+                    isUploading ? styles.uploadingBadge : styles.downloadingBadge,
+                  ]}
+                  testID={isUploading ? 'sync-status-uploading' : 'sync-status-downloading'}
+                >
+                  <ActivityIndicator size="small" color="#fff" />
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={styles.placeholder} testID={`image-placeholder-${image.id}`}>
+              {isUploading && <ActivityIndicator size="small" color="#b83f45" />}
+              {isDownloading && <ActivityIndicator size="small" color="#3b82f6" />}
+              {!isUploading && !isDownloading && <Text style={styles.placeholderText}>...</Text>}
+            </View>
+          )}
+        </View>
+
+        {/* Right side: Debug info (3/4 width) */}
+        <View style={styles.debugContainer}>
+          {/* Title row */}
+          <View style={styles.titleRow}>
+            {isEditing ? (
+              <TextInput
+                style={styles.titleInput}
+                value={editTitle}
+                onChangeText={setEditTitle}
+                onBlur={handleTitleSubmit}
+                onSubmitEditing={handleTitleSubmit}
+                autoFocus
+                testID={`title-input-${image.id}`}
+              />
+            ) : (
+              <TouchableOpacity
+                onPress={() => setIsEditing(true)}
+                style={styles.titleButton}
+                testID={`image-title-${image.id}`}
               >
-                <ActivityIndicator size="small" color="#fff" />
-                <Text style={styles.statusText}>{isUploading ? 'Uploading' : 'Downloading'}</Text>
+                <Text style={styles.title} numberOfLines={1}>
+                  {image.title}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleDelete} testID={`delete-button-${image.id}`}>
+              <Text style={styles.deleteButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Debug info */}
+          <View style={styles.debugInfo} testID={`debug-info-${image.id}`}>
+            <View style={styles.debugRow}>
+              <Text style={styles.debugLabel}>src:</Text>
+              <Text style={styles.debugValue} testID={`debug-src-${image.id}`}>
+                {src || 'null'}
+              </Text>
+            </View>
+            <View style={styles.debugRow}>
+              <Text style={styles.debugLabel}>localHash:</Text>
+              <Text
+                style={styles.debugValue}
+                numberOfLines={1}
+                testID={`debug-localHash-${image.id}`}
+              >
+                {localFile?.localHash ? `${localFile.localHash.slice(0, 8)}...` : 'null'}
+              </Text>
+            </View>
+            <View style={styles.debugRow}>
+              <Text style={styles.debugLabel}>download:</Text>
+              <Text
+                style={[styles.debugValue, isDownloading && styles.activeStatus]}
+                testID={`debug-download-${image.id}`}
+              >
+                {localFile?.downloadStatus || 'null'}
+              </Text>
+            </View>
+            <View style={styles.debugRow}>
+              <Text style={styles.debugLabel}>upload:</Text>
+              <Text
+                style={[styles.debugValue, isUploading && styles.activeStatus]}
+                testID={`debug-upload-${image.id}`}
+              >
+                {localFile?.uploadStatus || 'null'}
+              </Text>
+            </View>
+            <View style={styles.debugRow}>
+              <Text style={styles.debugLabel}>canDisplay:</Text>
+              <Text
+                style={[styles.debugValue, canDisplay ? styles.successStatus : styles.errorStatus]}
+                testID={`debug-canDisplay-${image.id}`}
+              >
+                {String(canDisplay)}
+              </Text>
+            </View>
+            {localFile?.lastSyncError && (
+              <View style={styles.debugRow} testID={`debug-error-row-${image.id}`}>
+                <Text style={styles.debugLabel}>error:</Text>
+                <Text
+                  style={[styles.debugValue, styles.errorStatus]}
+                  testID={`debug-error-${image.id}`}
+                >
+                  {localFile.lastSyncError}
+                </Text>
               </View>
-            )}
-            {/* Synced indicator (shown when not uploading/downloading) */}
-            {!isUploading && !isDownloading && (
-              <View style={[styles.statusBadge, styles.syncedBadge]} testID="sync-status-synced">
-                <Text style={styles.statusText}>Synced</Text>
-              </View>
-            )}
-          </>
-        ) : (
-          <View style={styles.placeholder} testID={`image-placeholder-${image.id}`}>
-            {isUploading && (
-              <>
-                <ActivityIndicator size="large" color="#b83f45" />
-                <Text style={styles.placeholderText}>Uploading...</Text>
-              </>
-            )}
-            {isDownloading && (
-              <>
-                <ActivityIndicator size="large" color="#3b82f6" />
-                <Text style={styles.placeholderText}>Downloading...</Text>
-              </>
-            )}
-            {!isUploading && !isDownloading && (
-              <Text style={styles.placeholderText}>Waiting for file...</Text>
             )}
           </View>
-        )}
-      </View>
-
-      <View style={styles.content}>
-        {isEditing ? (
-          <TextInput
-            style={styles.titleInput}
-            value={editTitle}
-            onChangeText={setEditTitle}
-            onBlur={handleTitleSubmit}
-            onSubmitEditing={handleTitleSubmit}
-            autoFocus
-            testID={`title-input-${image.id}`}
-          />
-        ) : (
-          <TouchableOpacity onPress={() => setIsEditing(true)} testID={`image-title-${image.id}`}>
-            <Text style={styles.title} numberOfLines={1}>
-              {image.title}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity onPress={handleDelete} testID={`delete-button-${image.id}`}>
-          <Text style={styles.deleteButton}>Delete</Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -156,7 +208,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  horizontalLayout: {
+    flexDirection: 'row',
+  },
   imageContainer: {
+    width: '25%',
     aspectRatio: 1,
     backgroundColor: '#f3f4f6',
     position: 'relative',
@@ -169,23 +225,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
   placeholderText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
-    marginTop: 8,
   },
   statusBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 4,
+    right: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
     borderRadius: 4,
-    gap: 4,
   },
   uploadingBadge: {
     backgroundColor: '#b83f45',
@@ -193,35 +246,69 @@ const styles = StyleSheet.create({
   downloadingBadge: {
     backgroundColor: '#3b82f6',
   },
-  syncedBadge: {
-    backgroundColor: '#22c55e',
+  debugContainer: {
+    flex: 1,
+    padding: 8,
   },
-  statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
-  content: {
-    padding: 12,
+  titleButton: {
+    flex: 1,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#374151',
   },
   titleInput: {
-    fontSize: 16,
+    flex: 1,
+    fontSize: 14,
     fontWeight: '500',
     color: '#374151',
     borderWidth: 1,
     borderColor: '#b83f45',
     borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginRight: 8,
   },
   deleteButton: {
-    marginTop: 8,
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#ef4444',
+    fontWeight: '600',
+    paddingHorizontal: 8,
+  },
+  debugInfo: {
+    gap: 2,
+  },
+  debugRow: {
+    flexDirection: 'row',
+  },
+  debugLabel: {
+    fontSize: 10,
+    color: '#6b7280',
+    width: 70,
+    fontWeight: '500',
+  },
+  debugValue: {
+    fontSize: 10,
+    color: '#374151',
+    flex: 1,
+  },
+  activeStatus: {
+    color: '#3b82f6',
+    fontWeight: '600',
+  },
+  successStatus: {
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  errorStatus: {
+    color: '#ef4444',
+    fontWeight: '600',
   },
 })

@@ -1,0 +1,87 @@
+appId: com.livestore.todo
+---
+# File Download E2E Test
+# Tests: login as existing user with images, verify files are downloaded locally
+# This test relies on user d@d.com having at least one image in their store
+
+# Clear keychain (where expo-secure-store keeps auth tokens)
+- clearKeychain
+
+# Clear app state and stop the app
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Launch app fresh
+- launchApp
+
+# Step 1: Login as d@d.com
+- assertVisible: "Sign In"
+- tapOn:
+    id: "email-input"
+- inputText: "d@d.com"
+- tapOn:
+    id: "password-input"
+- inputText: "dddddd"
+- tapOn:
+    id: "login-button"
+
+# Dismiss iOS "Save Password" dialog if it appears
+- runFlow:
+    when:
+      visible:
+        text: ".*assword.*"
+    commands:
+      - tapOn:
+          text: ".*ot Now.*"
+
+# Step 2: Wait for gallery to load
+- extendedWaitUntil:
+    visible:
+      id: "gallery"
+    timeout: 15000
+
+# Step 3: Wait for at least one image card to appear
+- extendedWaitUntil:
+    visible:
+      id: "image-card-.*"
+    timeout: 30000
+
+# Step 4: Restart the app to trigger file sync on existing data
+# (The first launch doesn't show download errors, but restart does)
+- launchApp:
+    stopApp: true
+
+- launchApp
+
+# Step 5: Wait for gallery to load again after restart
+- extendedWaitUntil:
+    visible:
+      id: "gallery"
+    timeout: 15000
+
+# Step 6: Wait for at least one image card to appear
+- extendedWaitUntil:
+    visible:
+      id: "image-card-.*"
+    timeout: 30000
+
+# Step 7: Wait for file sync to complete (give time for download)
+- extendedWaitUntil:
+    timeout: 30000
+    visible:
+      id: "debug-download-.*"
+
+# Step 8: Verify download status is "done" (not "error" or "null")
+- assertVisible:
+    text: "done"
+    id: "debug-download-.*"
+
+# Step 9: Verify localHash is not "null" (file was downloaded and hashed)
+- assertNotVisible:
+    text: "null"
+    id: "debug-localHash-.*"
+
+# Step 10: Verify no error row is shown
+- assertNotVisible:
+    id: "debug-error-row-.*"

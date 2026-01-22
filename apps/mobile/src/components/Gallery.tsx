@@ -22,9 +22,9 @@ interface GalleryProps {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
-const NUM_COLUMNS = 2
+const NUM_COLUMNS = 1
 const CARD_GAP = 12
-const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * (NUM_COLUMNS + 1)) / NUM_COLUMNS
+const CARD_WIDTH = SCREEN_WIDTH - CARD_GAP * 2
 
 export function Gallery({ userId }: GalleryProps) {
   const store = useAppStore(userId)
@@ -61,7 +61,7 @@ export function Gallery({ userId }: GalleryProps) {
         actions.createImage(imageId, title, saveResult.fileId)
       }
     } catch (error) {
-      console.error('[Gallery] Error uploading files:', error)
+      console.error('Error uploading files:', error)
     } finally {
       setIsUploading(false)
     }
@@ -132,7 +132,6 @@ export function Gallery({ userId }: GalleryProps) {
           keyExtractor={keyExtractor}
           numColumns={NUM_COLUMNS}
           contentContainerStyle={styles.grid}
-          columnWrapperStyle={styles.row}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#b83f45" />
           }
@@ -193,14 +192,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   grid: {
-    paddingHorizontal: CARD_GAP / 2,
+    paddingHorizontal: CARD_GAP,
     paddingBottom: 24,
-  },
-  row: {
-    justifyContent: 'flex-start',
     gap: CARD_GAP,
-    marginHorizontal: CARD_GAP / 2,
-    marginBottom: CARD_GAP,
   },
   cardWrapper: {
     width: CARD_WIDTH,
