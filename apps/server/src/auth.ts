@@ -6,8 +6,13 @@ import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db/schema'
 import type { Env } from './env'
 
-export function createAuth(env: Env) {
+export function createAuth(env: Env, requestUrl?: string) {
   const db = drizzle(env.DB, { schema })
+
+  // Determine if we're running in a secure (HTTPS) environment
+  // Check the actual request URL if provided, otherwise fall back to config
+  const isLocalDev = requestUrl?.includes('localhost') || requestUrl?.includes('127.0.0.1')
+  const isSecure = !isLocalDev && env.BETTER_AUTH_URL?.startsWith('https://')
 
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -20,7 +25,7 @@ export function createAuth(env: Env) {
       },
     }),
     secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
+    baseURL: isLocalDev ? requestUrl?.split('/api/')[0] : env.BETTER_AUTH_URL,
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 6,
@@ -30,17 +35,18 @@ export function createAuth(env: Env) {
       expiresIn: 60 * 60 * 24 * 90, // 90 days
       updateAge: 60 * 60 * 24, // 1 day
     },
-    trustedOrigins: [
-      'livestore-todo://',
-      '*',
-    ],
+    trustedOrigins: ['livestore-todo://', '*'],
     advanced: {
-      useSecureCookies: true,
+      // Only use secure cookies when running over HTTPS
+      // This is required for Safari compatibility in local dev (HTTP)
+      useSecureCookies: isSecure,
       cookies: {
         session_token: {
           attributes: {
-            sameSite: 'none' as const,
-            secure: true,
+            // sameSite: 'none' requires secure: true, which only works over HTTPS
+            // For local dev (HTTP), use 'lax' which works cross-port on localhost
+            sameSite: isSecure ? ('none' as const) : ('lax' as const),
+            secure: isSecure,
           },
         },
       },

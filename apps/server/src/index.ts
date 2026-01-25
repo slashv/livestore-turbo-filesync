@@ -17,7 +17,7 @@ const fileRoutes = createR2Handler<Request, Env, ExecutionContext>({
 
   // Validate auth using existing better-auth session
   validateAuth: async (request, env) => {
-    const auth = createAuth(env)
+    const auth = createAuth(env, request.url)
     const authHeader = request.headers.get('Authorization')
     const cookie = request.headers.get('Cookie')
 
@@ -86,7 +86,7 @@ app.all('/livestore-filesync-files/*', async (c) => {
 
 // Register user endpoint
 app.post('/api/register', async (c) => {
-  const auth = createAuth(c.env)
+  const auth = createAuth(c.env, c.req.url)
   const body = await c.req.json<{ email: string; password: string; name: string }>()
 
   if (!body.email || !body.password || !body.name) {
@@ -103,7 +103,7 @@ app.post('/api/register', async (c) => {
 // Better-auth routes
 app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
   try {
-    const auth = createAuth(c.env)
+    const auth = createAuth(c.env, c.req.url)
     // Clone the request with mutable headers for better-auth/expo plugin
     // The expo plugin needs to modify headers, but Cloudflare Workers have immutable headers
     const clonedRequest = new Request(c.req.raw.url, {
@@ -155,7 +155,7 @@ app.all('/sync', async (c) => {
     return c.json({ error: 'Invalid sync request' }, 400)
   }
 
-  const auth = createAuth(c.env)
+  const auth = createAuth(c.env, c.req.url)
 
   // Validate session from cookies or bearer tokens
   // - Web: Cookie from headers (automatic)
