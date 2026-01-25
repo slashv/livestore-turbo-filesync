@@ -1,3 +1,5 @@
+import { disposeFileSync } from '@livestore-filesync/core'
+import { disposeThumbnails } from '@livestore-filesync/image/thumbnails'
 import { createAuthClient } from 'better-auth/react'
 
 // API URL - use env var if set (production), otherwise default to localhost
@@ -33,9 +35,12 @@ export const authClient = createAuthClient({
   },
 })
 
-// Wrap signOut to also clear the token
+// Wrap signOut to dispose FileSync/Thumbnails singletons and clear the token
+// This ensures auth credentials don't persist after logout
 const originalSignOut = authClient.signOut
 export const signOut: typeof originalSignOut = async (options) => {
+  // Dispose singletons before signing out to clear stale auth state
+  await Promise.all([disposeFileSync(), disposeThumbnails()])
   const result = await originalSignOut(options)
   clearToken()
   return result

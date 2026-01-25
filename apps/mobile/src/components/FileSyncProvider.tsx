@@ -96,19 +96,19 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
   const disposersRef = useRef<{ fileSync?: () => Promise<void> }>({})
 
   useEffect(() => {
-    // If we already have disposers, we're in a StrictMode re-render - skip
-    if (disposersRef.current.fileSync) {
-      console.log('[FileSyncProvider] Already initialized, skipping')
-      setReady(true)
+    // Skip if no user
+    if (!userId) {
+      console.log('[FileSyncProvider] No user, skipping initialization')
       return
     }
 
-    console.log('[FileSyncProvider] Initializing FileSync...')
+    console.log('[FileSyncProvider] Initializing FileSync for user:', userId)
 
     // Get auth cookie for authenticated requests
     const cookie = authClient.getCookie()
 
     // Initialize file sync with Expo filesystem
+    // The singleton will auto-dispose if userId changed from previous init
     // NOTE: Image preprocessing is temporarily disabled to debug upload issues
     disposersRef.current.fileSync = initFileSync(store, {
       fileSystem: expoFileSystemLayer(),
@@ -118,6 +118,7 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
         // Include auth cookie in headers for mobile
         ...(cookie ? { headers: { Cookie: cookie } } : {}),
       },
+      userId, // Pass userId to detect user changes
       options: {
         // Preprocessing disabled for debugging - uncomment to re-enable
         // preprocessors: {
@@ -133,10 +134,9 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
     console.log('[FileSyncProvider] FileSync initialized')
     setReady(true)
 
-    // Don't return a cleanup function - let the singleton persist
-    // This is intentional because the singleton pattern in initFileSync
-    // doesn't handle async disposal well with React StrictMode
-  }, [store])
+    // Don't return a cleanup function - the singleton's user-awareness
+    // handles cleanup when user changes, and explicit dispose happens on logout
+  }, [store, userId])
 
   if (!ready) {
     return null

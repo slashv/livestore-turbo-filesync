@@ -1,4 +1,5 @@
 import { expoClient } from '@better-auth/expo/client'
+import { disposeFileSync } from '@livestore-filesync/core'
 import { createAuthClient } from 'better-auth/react'
 import Constants from 'expo-constants'
 import * as SecureStore from 'expo-secure-store'
@@ -20,4 +21,14 @@ export const authClient = createAuthClient({
   ],
 })
 
-export const { signIn, signOut, useSession } = authClient
+// Wrap signOut to dispose FileSync singleton
+// This ensures auth credentials don't persist after logout
+const originalSignOut = authClient.signOut
+export const signOut: typeof originalSignOut = async (options) => {
+  // Dispose FileSync singleton to clear stale auth state
+  // Note: Mobile doesn't use thumbnails currently
+  await disposeFileSync()
+  return originalSignOut(options)
+}
+
+export const { signIn, useSession } = authClient

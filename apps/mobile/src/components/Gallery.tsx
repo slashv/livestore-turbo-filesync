@@ -22,9 +22,9 @@ interface GalleryProps {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
-const NUM_COLUMNS = 1
+const NUM_COLUMNS = 2
 const CARD_GAP = 12
-const CARD_WIDTH = SCREEN_WIDTH - CARD_GAP * 2
+const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * 3) / 2
 
 export function Gallery({ userId }: GalleryProps) {
   const store = useAppStore(userId)
@@ -132,6 +132,7 @@ export function Gallery({ userId }: GalleryProps) {
           keyExtractor={keyExtractor}
           numColumns={NUM_COLUMNS}
           contentContainerStyle={styles.grid}
+          columnWrapperStyle={styles.columnWrapper}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#b83f45" />
           }
@@ -175,7 +176,6 @@ const styles = StyleSheet.create({
   },
   uploadContainer: {
     paddingHorizontal: CARD_GAP,
-    marginBottom: 12,
   },
   uploadButton: {
     backgroundColor: '#fff',
@@ -193,11 +193,15 @@ const styles = StyleSheet.create({
   },
   grid: {
     paddingHorizontal: CARD_GAP,
+    paddingTop: CARD_GAP,
     paddingBottom: 24,
+  },
+  columnWrapper: {
     gap: CARD_GAP,
   },
   cardWrapper: {
     width: CARD_WIDTH,
+    marginBottom: CARD_GAP,
   },
   emptyState: {
     flex: 1,

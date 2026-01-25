@@ -5,6 +5,7 @@ import { layer as opfsLayer } from '@livestore-filesync/opfs'
 import { useAppStore } from '@repo/core'
 import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { getToken } from '~/lib/auth-client'
+import { useAuth } from './AuthProvider'
 
 // Get API URL from environment or use localhost for dev
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
@@ -15,29 +16,34 @@ interface FileSyncProviderProps {
 
 function FileSyncProviderInner({ children }: FileSyncProviderProps) {
   const store = useAppStore()
+  const { user } = useAuth()
   const [ready, setReady] = useState(false)
   const disposersRef = useRef<{ fileSync?: () => Promise<void>; thumbnails?: () => Promise<void> }>(
     {}
   )
 
+  // Get user ID - this ensures singletons are recreated when user changes
+  const userId = user?.id
+
   useEffect(() => {
-    // If we already have disposers, we're in a StrictMode re-render - skip
-    if (disposersRef.current.fileSync) {
-      console.log('[FileSyncProvider] Already initialized, skipping')
-      setReady(true)
+    // Skip if no user (shouldn't happen as FileSyncProvider is used within authenticated routes)
+    if (!userId) {
+      console.log('[FileSyncProvider] No user, skipping initialization')
       return
     }
 
-    console.log('[FileSyncProvider] Initializing FileSync...')
+    console.log('[FileSyncProvider] Initializing FileSync for user:', userId)
 
     // Initialize file sync with image preprocessing (using canvas processor - no WASM needed)
     // Pass bearer token for authentication (Electron uses bearer tokens, not cookies)
+    // The singleton will auto-dispose if userId changed from previous init
     disposersRef.current.fileSync = initFileSync(store, {
       fileSystem: opfsLayer(),
       remote: {
         signerBaseUrl: `${API_URL}/api`,
         authToken: getToken() ?? undefined,
       },
+      userId, // Pass userId to detect user changes
       options: {
         preprocessors: {
           'image/*': createImagePreprocessor({
@@ -53,21 +59,22 @@ function FileSyncProviderInner({ children }: FileSyncProviderProps) {
     console.log('[FileSyncProvider] FileSync initialized')
 
     // Initialize thumbnail generation (using canvas processor - works in both dev and production)
+    // The singleton will auto-dispose if userId changed from previous init
     disposersRef.current.thumbnails = initThumbnails(store, {
       sizes: { small: 200, medium: 400 },
       format: 'webp',
       fileSystem: opfsLayer(),
       workerUrl: new URL('../workers/thumbnail.worker.ts', import.meta.url),
+      userId, // Pass userId to detect user changes
     })
     console.log('[FileSyncProvider] Thumbnails initialized')
 
     console.log('[FileSyncProvider] Ready')
     setReady(true)
 
-    // Don't return a cleanup function - let the singleton persist
-    // This is intentional because the singleton pattern in initFileSync
-    // doesn't handle async disposal well with React StrictMode
-  }, [store])
+    // Don't return a cleanup function - the singleton's user-awareness
+    // handles cleanup when user changes, and explicit dispose happens on logout
+  }, [store, userId])
 
   if (!ready) {
     return null
