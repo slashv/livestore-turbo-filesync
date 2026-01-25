@@ -1,5 +1,6 @@
 import { saveFile } from '@livestore-filesync/core'
-import { createGalleryActions, imagesQuery, useAppStore } from '@repo/core'
+import { imagesQuery, useAppStore } from '@repo/core'
+import { events } from '@repo/schema'
 import { type ReactNode, useRef } from 'react'
 import { ImageCard } from './ImageCard'
 
@@ -21,7 +22,6 @@ export function Gallery({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const images = store.useQuery(imagesQuery)
-  const actions = createGalleryActions(store)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -32,7 +32,9 @@ export function Gallery({
         const result = await saveFile(file)
         const imageId = crypto.randomUUID()
         const title = file.name.replace(/\.[^/.]+$/, '')
-        actions.createImage(imageId, title, result.fileId)
+        store.commit(
+          events.imageCreated({ id: imageId, title, fileId: result.fileId, createdAt: new Date() })
+        )
       } catch (error) {
         console.error('[Gallery] Error uploading file:', error)
       }
@@ -80,8 +82,12 @@ export function Gallery({
               key={image.id}
               image={image}
               enableThumbnails={enableThumbnails}
-              onDelete={() => actions.deleteImage(image.id)}
-              onUpdateTitle={(title) => actions.updateTitle(image.id, title)}
+              onDelete={() =>
+                store.commit(events.imageDeleted({ id: image.id, deletedAt: new Date() }))
+              }
+              onUpdateTitle={(title) =>
+                store.commit(events.imageTitleUpdated({ id: image.id, title }))
+              }
             />
           ))}
         </div>

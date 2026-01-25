@@ -23,8 +23,8 @@ const imagesTable = State.SQLite.table({
     id: State.SQLite.text({ primaryKey: true }),
     title: State.SQLite.text(),
     fileId: State.SQLite.text(), // References files.id
-    createdAt: State.SQLite.integer(),
-    deletedAt: State.SQLite.integer({ nullable: true }),
+    createdAt: State.SQLite.integer({ schema: Schema.DateFromNumber }),
+    deletedAt: State.SQLite.integer({ nullable: true, schema: Schema.DateFromNumber }),
   },
 })
 
@@ -50,7 +50,7 @@ const imageCreated = Events.synced({
     id: Schema.String,
     title: Schema.String,
     fileId: Schema.String,
-    createdAt: Schema.DateFromNumber,
+    createdAt: Schema.Date,
   }),
 })
 
@@ -66,7 +66,7 @@ const imageDeleted = Events.synced({
   name: 'v1.ImageDeleted',
   schema: Schema.Struct({
     id: Schema.String,
-    deletedAt: Schema.DateFromNumber,
+    deletedAt: Schema.Date,
   }),
 })
 
@@ -84,10 +84,9 @@ export const events = {
 const materializers = State.SQLite.materializers(events, {
   ...fileSyncSchema.createMaterializers(tables),
   'v1.ImageCreated': ({ id, title, fileId, createdAt }) =>
-    tables.images.insert({ id, title, fileId, createdAt: createdAt.getTime(), deletedAt: null }),
+    tables.images.insert({ id, title, fileId, createdAt, deletedAt: null }),
   'v1.ImageTitleUpdated': ({ id, title }) => tables.images.update({ title }).where({ id }),
-  'v1.ImageDeleted': ({ id, deletedAt }) =>
-    tables.images.update({ deletedAt: deletedAt.getTime() }).where({ id }),
+  'v1.ImageDeleted': ({ id, deletedAt }) => tables.images.update({ deletedAt }).where({ id }),
 })
 
 const state = State.SQLite.makeState({ tables, materializers })

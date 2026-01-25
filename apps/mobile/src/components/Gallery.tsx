@@ -1,6 +1,7 @@
 import { saveFile } from '@livestore-filesync/core'
 import { ExpoFile } from '@livestore-filesync/expo'
-import { createGalleryActions, imagesQuery } from '@repo/core'
+import { imagesQuery } from '@repo/core'
+import { events } from '@repo/schema'
 import * as ImagePicker from 'expo-image-picker'
 import { useCallback, useState } from 'react'
 import {
@@ -29,7 +30,6 @@ const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * 3) / 2
 export function Gallery({ userId }: GalleryProps) {
   const store = useAppStore(userId)
   const images = store.useQuery(imagesQuery)
-  const actions = createGalleryActions(store)
   const { user, signOut } = useAuth()
   const [isUploading, setIsUploading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -58,7 +58,14 @@ export function Gallery({ userId }: GalleryProps) {
 
         const imageId = (globalThis as any).crypto.randomUUID() as string
         const title = (asset.fileName ?? `Image ${Date.now()}`).replace(/\.[^/.]+$/, '')
-        actions.createImage(imageId, title, saveResult.fileId)
+        store.commit(
+          events.imageCreated({
+            id: imageId,
+            title,
+            fileId: saveResult.fileId,
+            createdAt: new Date(),
+          })
+        )
       }
     } catch (error) {
       console.error('Error uploading files:', error)
@@ -80,12 +87,12 @@ export function Gallery({ userId }: GalleryProps) {
         <ImageCard
           image={item}
           store={store}
-          onDelete={() => actions.deleteImage(item.id)}
-          onUpdateTitle={(title) => actions.updateTitle(item.id, title)}
+          onDelete={() => store.commit(events.imageDeleted({ id: item.id, deletedAt: new Date() }))}
+          onUpdateTitle={(title) => store.commit(events.imageTitleUpdated({ id: item.id, title }))}
         />
       </View>
     ),
-    [store, actions]
+    [store]
   )
 
   const keyExtractor = useCallback((item: (typeof images)[0]) => item.id, [])
