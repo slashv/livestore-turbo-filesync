@@ -1,12 +1,8 @@
 import { Gallery as SharedGallery } from '@repo/ui'
-import { useAppStore } from '~/livestore/store'
 
-export function Gallery({ userId }: { userId: string }) {
-  const store = useAppStore(userId)
-
+export function Gallery() {
   return (
     <SharedGallery
-      store={store}
       headerContent={<div className="h-6" />}
       footerText={
         <>

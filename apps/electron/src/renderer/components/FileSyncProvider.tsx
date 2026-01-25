@@ -2,20 +2,19 @@ import { initFileSync } from '@livestore-filesync/core'
 import { createImagePreprocessor } from '@livestore-filesync/image/preprocessor'
 import { initThumbnails } from '@livestore-filesync/image/thumbnails'
 import { layer as opfsLayer } from '@livestore-filesync/opfs'
+import { useAppStore } from '@repo/core'
 import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { getToken } from '~/lib/auth-client'
-import { useAppStore } from '~/livestore/store'
 
 // Get API URL from environment or use localhost for dev
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 
 interface FileSyncProviderProps {
-  userId: string
   children: ReactNode
 }
 
-function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
-  const store = useAppStore(userId)
+function FileSyncProviderInner({ children }: FileSyncProviderProps) {
+  const store = useAppStore()
   const [ready, setReady] = useState(false)
   const disposersRef = useRef<{ fileSync?: () => Promise<void>; thumbnails?: () => Promise<void> }>(
     {}

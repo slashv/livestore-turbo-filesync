@@ -1,15 +1,9 @@
 import { saveFile } from '@livestore-filesync/core'
-import type { Store } from '@livestore/livestore'
-import type { ReactApi } from '@livestore/react'
-import { createGalleryActions, imagesQuery } from '@repo/core'
-import type { schema } from '@repo/schema'
+import { createGalleryActions, imagesQuery, useAppStore } from '@repo/core'
 import { type ReactNode, useRef } from 'react'
 import { ImageCard } from './ImageCard'
 
-type AppStore = Store<typeof schema> & ReactApi
-
 export interface GalleryProps {
-  store: AppStore
   /** Content to render before the title (e.g., spacer for electron title bar) */
   headerContent?: ReactNode
   /** Footer text to display at the bottom */
@@ -19,11 +13,11 @@ export interface GalleryProps {
 }
 
 export function Gallery({
-  store,
   headerContent,
   footerText = 'Synced with LiveStore FileSync',
   enableThumbnails = true,
 }: GalleryProps) {
+  const store = useAppStore()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const images = store.useQuery(imagesQuery)
@@ -85,7 +79,6 @@ export function Gallery({
             <ImageCard
               key={image.id}
               image={image}
-              store={store}
               enableThumbnails={enableThumbnails}
               onDelete={() => actions.deleteImage(image.id)}
               onUpdateTitle={(title) => actions.updateTitle(image.id, title)}

@@ -17,11 +17,15 @@
     "effect": "catalog:"
   },
   "peerDependencies": {
-    "@livestore/livestore": "catalog:"
+    "@livestore/livestore": "catalog:",
+    "@livestore/react": "catalog:",
+    "react": "^19.0.0"
   },
   "devDependencies": {
     "@livestore/livestore": "catalog:",
+    "@livestore/react": "catalog:",
     "@repo/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
     "typescript": "^5.7.2"
   }
 }

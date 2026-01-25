@@ -1,18 +1,15 @@
 import { deleteFile } from '@livestore-filesync/core'
-import type { Store } from '@livestore/livestore'
 import { queryDb } from '@livestore/livestore'
-import type { ReactApi } from '@livestore/react'
-import { type schema, tables } from '@repo/schema'
+import { useAppStore } from '@repo/core'
+import { tables } from '@repo/schema'
 import { useEffect, useState } from 'react'
 import { FileSyncImage } from './FileSyncImage'
 import { ImageDebugInfo } from './ImageDebugInfo'
 
 type Image = typeof tables.images.rowSchema.Type
-type AppStore = Store<typeof schema> & ReactApi
 
 export interface ImageCardProps {
   image: Image
-  store: AppStore
   onDelete: () => void
   onUpdateTitle: (title: string) => void
   /** Whether to enable thumbnail resolution (default: true) */
@@ -21,11 +18,12 @@ export interface ImageCardProps {
 
 export function ImageCard({
   image,
-  store,
   onDelete,
   onUpdateTitle,
   enableThumbnails = true,
 }: ImageCardProps) {
+  const store = useAppStore()
+
   const file = store.useQuery(
     queryDb(tables.files.where({ id: image.fileId }).first(), { label: 'gallery-files' })
   )
@@ -60,7 +58,6 @@ export function ImageCard({
       <div className="relative bg-gray-100 aspect-square">
         <FileSyncImage
           fileId={file.id}
-          store={store}
           size={enableThumbnails ? 'small' : 'full'}
           className="object-cover w-full h-full"
           alt={image.title}
@@ -136,7 +133,7 @@ export function ImageCard({
           Delete
         </button>
 
-        <ImageDebugInfo fileId={file.id} store={store} />
+        <ImageDebugInfo fileId={file.id} />
       </div>
     </div>
   )

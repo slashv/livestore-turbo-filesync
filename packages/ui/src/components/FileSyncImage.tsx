@@ -1,12 +1,9 @@
 import { getFileDisplayState, resolveFileUrl } from '@livestore-filesync/core'
 import { resolveThumbnailUrl } from '@livestore-filesync/image/thumbnails'
-import type { Store } from '@livestore/livestore'
 import { queryDb } from '@livestore/livestore'
-import type { ReactApi } from '@livestore/react'
-import { type schema, tables } from '@repo/schema'
+import { useAppStore } from '@repo/core'
+import { tables } from '@repo/schema'
 import { type ReactNode, useEffect, useState } from 'react'
-
-type AppStore = Store<typeof schema> & ReactApi
 
 type FillMode = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
 
@@ -20,7 +17,6 @@ export interface FileSyncImageState {
 
 export interface FileSyncImageProps {
   fileId: string
-  store: AppStore
   size?: 'small' | 'medium' | 'large' | 'full'
   fillMode?: FillMode
   className?: string
@@ -30,13 +26,14 @@ export interface FileSyncImageProps {
 
 export function FileSyncImage({
   fileId,
-  store,
   size = 'small',
   fillMode = 'cover',
   className,
   alt,
   children,
 }: FileSyncImageProps) {
+  const store = useAppStore()
+
   const [localFileState] = store.useClientDocument(tables.localFileState)
   const [thumbnailStateDoc] = store.useClientDocument(tables.thumbnailState)
   const file = store.useQuery(

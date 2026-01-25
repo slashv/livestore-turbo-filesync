@@ -1,17 +1,15 @@
 import { getFileDisplayState } from '@livestore-filesync/core'
-import type { Store } from '@livestore/livestore'
 import { queryDb } from '@livestore/livestore'
-import type { ReactApi } from '@livestore/react'
-import { type schema, tables } from '@repo/schema'
-
-type AppStore = Store<typeof schema> & ReactApi
+import { useAppStore } from '@repo/core'
+import { tables } from '@repo/schema'
 
 export interface ImageDebugInfoProps {
   fileId: string
-  store: AppStore
 }
 
-export function ImageDebugInfo({ fileId, store }: ImageDebugInfoProps) {
+export function ImageDebugInfo({ fileId }: ImageDebugInfoProps) {
+  const store = useAppStore()
+
   const [localFileState] = store.useClientDocument(tables.localFileState)
   const file = store.useQuery(
     queryDb(tables.files.where({ id: fileId }).first(), { label: 'image-debug-file' })

@@ -2,8 +2,8 @@ import { initFileSync } from '@livestore-filesync/core'
 import { createImagePreprocessor } from '@livestore-filesync/image/preprocessor'
 import { initThumbnails } from '@livestore-filesync/image/thumbnails'
 import { layer as opfsLayer } from '@livestore-filesync/opfs'
+import { useAppStore } from '@repo/core'
 import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
-import { useAppStore } from '~/livestore/store'
 
 interface FileSyncProviderProps {
   children: ReactNode
