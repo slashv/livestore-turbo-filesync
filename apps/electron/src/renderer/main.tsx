@@ -18,7 +18,7 @@ const storeRegistry = new StoreRegistry({
 
 function AuthenticatedApp() {
   const { user, signOut } = useAuth()
-  const store = useAppStore(user!.id)
+  const store = useAppStore()
 
   if (!user) return null
 
