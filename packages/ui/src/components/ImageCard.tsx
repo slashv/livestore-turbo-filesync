@@ -94,46 +94,53 @@ export function ImageCard({
       </div>
 
       <div className="p-3">
-        {isEditing ? (
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onBlur={handleTitleSubmit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleTitleSubmit()
-              if (e.key === 'Escape') {
-                setEditTitle(image.title)
-                setIsEditing(false)
-              }
-            }}
-            className="px-2 py-1 w-full rounded border focus:outline-none focus:border-rose-400"
-            // biome-ignore lint/a11y/noAutofocus: auto focus is intentional for inline editing
-            autoFocus
-            data-testid={`title-input-${image.id}`}
-          />
-        ) : (
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleTitleSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleTitleSubmit()
+                if (e.key === 'Escape') {
+                  setEditTitle(image.title)
+                  setIsEditing(false)
+                }
+              }}
+              className="flex-1 px-2 py-1 text-sm bg-white rounded border border-gray-300 focus:outline-none focus:border-rose-400"
+              // biome-ignore lint/a11y/noAutofocus: auto focus is intentional for inline editing
+              autoFocus
+              data-testid={`title-input-${image.id}`}
+            />
+          ) : (
+            <input
+              type="text"
+              value={image.title}
+              readOnly
+              onClick={() => setIsEditing(true)}
+              className="flex-1 px-2 py-1 text-sm font-medium text-gray-700 truncate bg-gray-50 rounded border border-gray-200 cursor-pointer hover:border-gray-300 hover:bg-white"
+              title="Click to edit"
+              data-testid={`title-${image.id}`}
+            />
+          )}
+
           <button
             type="button"
-            className="w-full font-medium text-left text-gray-700 truncate cursor-pointer hover:text-rose-600"
-            onClick={() => setIsEditing(true)}
-            title="Click to edit"
-            data-testid={`title-${image.id}`}
+            onClick={handleDelete}
+            className="text-xs text-gray-400 transition-colors hover:text-red-500"
+            data-testid={`delete-button-${image.id}`}
           >
-            {image.title}
+            Delete
           </button>
-        )}
+        </div>
 
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="mt-2 text-sm text-gray-400 transition-colors hover:text-red-500"
-          data-testid={`delete-button-${image.id}`}
-        >
-          Delete
-        </button>
-
-        <ImageDebugInfo fileId={file.id} />
+        <details className="mt-2">
+          <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600">
+            Debug
+          </summary>
+          <ImageDebugInfo fileId={file.id} />
+        </details>
       </div>
     </div>
   )
