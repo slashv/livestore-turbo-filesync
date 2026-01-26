@@ -1,6 +1,6 @@
 import { StoreRegistry } from '@livestore/livestore'
 import { StoreRegistryProvider } from '@livestore/react'
-import { AppStoreProvider, LoginScreen } from '@repo/ui'
+import { AppStoreProvider, ConnectionStatus, LoginScreen } from '@repo/ui'
 import { StrictMode, Suspense } from 'react'
 import { unstable_batchedUpdates as batchUpdates } from 'react-dom'
 import { createRoot } from 'react-dom/client'
@@ -24,6 +24,9 @@ function AuthenticatedApp() {
   return (
     <AppStoreProvider value={store}>
       <div className="relative">
+        <div className="absolute top-8 left-4 flex items-center z-10">
+          <ConnectionStatus />
+        </div>
         <div className="absolute top-8 right-4 flex items-center gap-4 z-10">
           <span className="text-sm text-gray-600">{user.email}</span>
           <button
