@@ -5,6 +5,7 @@ import { layer as opfsLayer } from '@livestore-filesync/opfs'
 import { tables } from '@repo/store'
 import { useAppStore } from '@repo/ui'
 import { type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import ThumbnailWorker from '../workers/thumbnail.worker?worker'
 import { useAuth } from './AuthProvider'
 
 interface FileSyncProviderProps {
@@ -59,11 +60,12 @@ function FileSyncProviderInner({ children }: FileSyncProviderProps) {
 
     // Initialize thumbnail generation
     // The singleton will auto-dispose if userId changed from previous init
+    // Use worker constructor (Vite's ?worker import) for proper bundling in production
     disposersRef.current.thumbnails = initThumbnails(store, {
       sizes: { small: 400, medium: 600, large: 1200 },
       format: 'webp',
       fileSystem: opfsLayer(),
-      workerUrl: new URL('../workers/thumbnail.worker.ts', import.meta.url),
+      worker: ThumbnailWorker,
       userId, // Pass userId to detect user changes
       schema: { tables },
     })
