@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --config=e2e/playwright.config.ts --ui",
-    "deploy:preview": "pnpm build:preview && wrangler pages deploy dist --project-name=livestore-todo",
-    "deploy:prod": "pnpm build:production && wrangler pages deploy dist --project-name=livestore-todo --branch production"
+    "deploy:preview": "pnpm build:preview && wrangler pages deploy dist --project-name=livestore-filesync-gallery",
+    "deploy:prod": "pnpm build:production && wrangler pages deploy dist --project-name=livestore-filesync-gallery --branch production"
   },
   "dependencies": {
     "@livestore-filesync/core": "workspace:*",

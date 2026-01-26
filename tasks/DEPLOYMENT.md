@@ -21,7 +21,7 @@ This document details the deployment process for all platforms in the LiveStore 
 - [x] Create Cloudflare Pages project
 - [x] Test deployment
 
-**Live at:** https://livestore-todo.pages.dev
+**Live at:** https://livestore-filesync-gallery.pages.dev
 
 ### Electron (GitHub Releases)
 - [x] Install electron-updater dependency
@@ -71,7 +71,7 @@ pnpm deploy
             |                         (livestore-app-server.contact-106.workers.dev)
             |
             +-- @repo/web ----------> Cloudflare Pages
-            |                         (livestore-todo.pages.dev)
+            |                         (livestore-filesync-gallery.pages.dev)
             |
             +-- @repo/electron -----> GitHub Releases
             |                         (DMG, NSIS, AppImage + auto-update)
@@ -139,7 +139,7 @@ new_sqlite_classes = ["SyncBackendDO"]
 
 # Environment variables
 [vars]
-CORS_ORIGINS = "https://livestore-todo.pages.dev"
+CORS_ORIGINS = "https://livestore-filesync-gallery.pages.dev"
 BETTER_AUTH_URL = "https://livestore-app-server.workers.dev"
 
 # Development environment override
@@ -208,7 +208,7 @@ Ensure `apps/web/package.json` has the deploy script:
 pnpm --filter @repo/web deploy
 ```
 
-The web app will be available at: `https://livestore-todo.pages.dev`
+The web app will be available at: `https://livestore-filesync-gallery.pages.dev`
 
 ---
 
@@ -562,7 +562,7 @@ pnpm deploy:mobile
 ### Server (@repo/server)
 | Variable | Development | Production |
 |----------|-------------|------------|
-| `CORS_ORIGINS` | `http://localhost:5173` | `https://livestore-todo.pages.dev` |
+| `CORS_ORIGINS` | `http://localhost:5173` | `https://livestore-filesync-gallery.pages.dev` |
 | `BETTER_AUTH_URL` | `http://localhost:8787` | `https://livestore-app-server.workers.dev` |
 | `BETTER_AUTH_SECRET` | (local secret) | (set in Cloudflare dashboard) |
 

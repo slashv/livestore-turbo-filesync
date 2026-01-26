@@ -6,6 +6,71 @@ import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db/schema'
 import type { Env } from './env'
 
+// Custom password hashing using PBKDF2 (Web Crypto API) - much faster than bcrypt in Workers
+// This is necessary because bcrypt exceeds CPU time limits on Cloudflare Workers free tier
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+  const hash = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256
+  )
+  // Format: base64(salt):base64(hash)
+  const saltB64 = btoa(String.fromCharCode(...salt))
+  const hashB64 = btoa(String.fromCharCode(...new Uint8Array(hash)))
+  return `${saltB64}:${hashB64}`
+}
+
+async function verifyPassword(data: { hash: string; password: string }): Promise<boolean> {
+  const { hash: storedHash, password } = data
+  const [saltB64, hashB64] = storedHash.split(':')
+  if (!saltB64 || !hashB64) return false
+
+  const encoder = new TextEncoder()
+  const salt = Uint8Array.from(atob(saltB64), (c) => c.charCodeAt(0))
+  const expectedHash = Uint8Array.from(atob(hashB64), (c) => c.charCodeAt(0))
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+  const hash = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256
+  )
+  const hashArray = new Uint8Array(hash)
+
+  // Constant-time comparison
+  if (hashArray.length !== expectedHash.length) return false
+  let result = 0
+  for (let i = 0; i < hashArray.length; i++) {
+    result |= (hashArray[i] ?? 0) ^ (expectedHash[i] ?? 0)
+  }
+  return result === 0
+}
+
 export function createAuth(env: Env, requestUrl?: string) {
   const db = drizzle(env.DB, { schema })
 
@@ -29,6 +94,10 @@ export function createAuth(env: Env, requestUrl?: string) {
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 6,
+      password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+      },
     },
     plugins: [expo(), bearer()],
     session: {

@@ -103,8 +103,8 @@ pnpm deploy:prod
 
 | Environment | Server Worker | D1 Database | Web URL |
 |-------------|---------------|-------------|---------|
-| **Production** | `livestore-app-server` | `livestore-auth-prod` | `livestore-todo.pages.dev` |
-| **Preview** | `livestore-app-server-dev` | `livestore-auth-dev` | `*.livestore-todo.pages.dev` |
+| **Production** | `livestore-app-server` | `livestore-auth-prod` | `livestore-filesync-gallery.pages.dev` |
+| **Preview** | `livestore-app-server-dev` | `livestore-auth-dev` | `*.livestore-filesync-gallery.pages.dev` |
 
 ### D1 Databases
 
@@ -173,7 +173,7 @@ The web app is deployed to Cloudflare Pages.
 pnpm deploy:web:preview
 ```
 
-Builds with `.env.preview` (pointing to dev server) and creates a unique preview URL like `https://abc123.livestore-todo.pages.dev`.
+Builds with `.env.preview` (pointing to dev server) and creates a unique preview URL like `https://abc123.livestore-filesync-gallery.pages.dev`.
 
 ### Production
 
@@ -181,7 +181,7 @@ Builds with `.env.preview` (pointing to dev server) and creates a unique preview
 pnpm deploy:web:prod
 ```
 
-Builds with `.env.production` and deploys to `https://livestore-todo.pages.dev`.
+Builds with `.env.production` and deploys to `https://livestore-filesync-gallery.pages.dev`.
 
 ### Environment Files
 
@@ -245,12 +245,12 @@ Run Playwright E2E tests against any deployed URL:
 cd apps/web
 
 # Test against preview deployment
-TEST_BASE_URL=https://abc123.livestore-todo.pages.dev \
+TEST_BASE_URL=https://abc123.livestore-filesync-gallery.pages.dev \
 TEST_API_URL=https://livestore-app-server-dev.contact-106.workers.dev \
 npx playwright test --config=e2e/playwright.config.ts
 
 # Test against production
-TEST_BASE_URL=https://livestore-todo.pages.dev \
+TEST_BASE_URL=https://livestore-filesync-gallery.pages.dev \
 TEST_API_URL=https://livestore-app-server.contact-106.workers.dev \
 npx playwright test --config=e2e/playwright.config.ts
 ```
@@ -347,7 +347,7 @@ Check if cookies have `SameSite=None`:
 ```bash
 curl -i -X POST https://livestore-app-server.contact-106.workers.dev/api/auth/sign-up/email \
   -H "Content-Type: application/json" \
-  -H "Origin: https://livestore-todo.pages.dev" \
+  -H "Origin: https://livestore-filesync-gallery.pages.dev" \
   -d '{"email":"test@example.com","password":"password123","name":"Test"}'
 ```
 

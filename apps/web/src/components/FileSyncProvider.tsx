@@ -33,10 +33,14 @@ function FileSyncProviderInner({ children }: FileSyncProviderProps) {
 
     // Initialize file sync with image preprocessing (using canvas processor - no WASM needed)
     // The singleton will auto-dispose if userId changed from previous init
+    // Use VITE_API_URL in production, otherwise relative /api path for local dev
+    const apiUrl = import.meta.env.VITE_API_URL || ''
     disposersRef.current.fileSync = initFileSync(store, {
       fileSystem: opfsLayer(),
       remote: {
-        signerBaseUrl: '/api',
+        signerBaseUrl: `${apiUrl}/api`,
+        // Include credentials for cross-origin requests (needed for cookie auth)
+        includeCredentials: true,
       },
       userId, // Pass userId to detect user changes
       options: {

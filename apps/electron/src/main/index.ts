@@ -90,7 +90,7 @@ function createWindow() {
       if (!details.requestHeaders.Origin) {
         details.requestHeaders.Origin = isDev
           ? 'http://localhost:5173'
-          : 'https://livestore-todo.pages.dev'
+          : 'https://livestore-filesync-gallery.pages.dev'
       }
       callback({ requestHeaders: details.requestHeaders })
     }

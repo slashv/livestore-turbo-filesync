@@ -47,7 +47,7 @@ app.use(
       // Allow localhost origins (development)
       if (origin.startsWith('http://localhost:')) return origin
       // Allow production origins
-      if (origin === 'https://livestore-todo.pages.dev') return origin
+      if (origin === 'https://livestore-filesync-gallery.pages.dev') return origin
       // Allow *.pages.dev subdomains (for preview deployments)
       if (origin.endsWith('.pages.dev')) return origin
       return null
