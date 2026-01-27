@@ -1,11 +1,7 @@
 import { LoginScreen } from '@repo/ui'
-import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { AuthProvider, useAuth } from '~/components/AuthProvider'
-
-export const Route = createRootRoute({
-  component: RootComponent,
-})
+import { HomePage } from './HomePage'
 
 function AuthGate() {
   const auth = useAuth()
@@ -23,10 +19,10 @@ function AuthGate() {
     return <LoginScreen auth={auth} />
   }
 
-  return <Outlet />
+  return <HomePage />
 }
 
-function RootComponent() {
+export function App() {
   return (
     <AuthProvider>
       <div className="min-h-screen bg-gray-100">

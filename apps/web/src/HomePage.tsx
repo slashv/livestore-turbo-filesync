@@ -1,15 +1,10 @@
 import { AppStoreProvider, ConnectionStatus } from '@repo/ui'
-import { createFileRoute } from '@tanstack/react-router'
 import { useAuth } from '~/components/AuthProvider'
 import { FileSyncProvider } from '~/components/FileSyncProvider'
 import { Gallery } from '~/components/Gallery'
 import { useAppStore } from '~/livestore/store'
 
-export const Route = createFileRoute('/')({
-  component: HomePage,
-})
-
-function HomePage() {
+export function HomePage() {
   const { user, signOut } = useAuth()
   const store = useAppStore()
 
