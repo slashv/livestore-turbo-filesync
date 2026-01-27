@@ -46,6 +46,8 @@ function FileSyncProviderInner({ children }: FileSyncProviderProps) {
       },
       userId, // Pass userId to detect user changes
       options: {
+        maxConcurrentUploads: 5,
+        maxConcurrentDownloads: 5,
         preprocessors: {
           'image/*': createImagePreprocessor({
             maxDimension: 1500,

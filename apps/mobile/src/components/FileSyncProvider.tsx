@@ -120,6 +120,8 @@ function FileSyncProviderInner({ userId, children }: FileSyncProviderProps) {
       },
       userId, // Pass userId to detect user changes
       options: {
+        maxConcurrentUploads: 5,
+        maxConcurrentDownloads: 5,
         // Preprocessing disabled for debugging - uncomment to re-enable
         // preprocessors: {
         //   'image/*': createExpoImagePreprocessor(),
