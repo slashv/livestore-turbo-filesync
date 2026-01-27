@@ -24,6 +24,7 @@ function AuthenticatedApp() {
   return (
     <AppStoreProvider value={store}>
       <div className="relative">
+        <div className="titlebar-drag-region absolute top-0 left-0 right-0 h-8 z-20" />
         <div className="absolute top-8 left-4 flex items-center z-10">
           <ConnectionStatus />
         </div>
@@ -51,6 +52,7 @@ function AuthGate() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="titlebar-drag-region absolute top-0 left-0 right-0 h-8 z-20" />
         <div className="text-gray-500">Loading...</div>
       </div>
     )

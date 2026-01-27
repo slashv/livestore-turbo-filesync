@@ -1,4 +1,5 @@
 import path from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import topLevelAwait from 'vite-plugin-top-level-await'
@@ -28,7 +29,7 @@ export default defineConfig({
     },
   },
   renderer: {
-    plugins: [wasm(), topLevelAwait(), react()],
+    plugins: [tailwindcss(), wasm(), topLevelAwait(), react()],
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src/renderer'),

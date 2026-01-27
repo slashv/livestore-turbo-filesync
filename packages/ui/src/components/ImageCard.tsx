@@ -54,7 +54,7 @@ export function ImageCard({
 
   return (
     <div
-      className="overflow-hidden bg-white rounded-lg shadow"
+      className="overflow-hidden bg-white rounded-lg shadow-xs"
       data-testid={`image-card-${image.id}`}
     >
       <button
@@ -109,7 +109,7 @@ export function ImageCard({
                 !isDownloading &&
                 (isUploadQueued || isDownloadQueued) && (
                   <div
-                    className="absolute top-2 right-2 px-2 py-0.5 rounded text-xs font-medium text-white bg-gray-500"
+                    className="absolute top-2 right-2 px-2 py-0.5 rounded-xs text-xs font-medium text-white bg-gray-500"
                     data-testid={`sync-status-${image.id}`}
                   >
                     Queued
@@ -139,7 +139,7 @@ export function ImageCard({
                   setIsEditing(false)
                 }
               }}
-              className="flex-1 px-2 py-1 text-sm bg-white rounded border border-gray-300 focus:outline-none focus:border-rose-400"
+              className="flex-1 px-2 py-1 text-sm bg-white rounded-xs border border-gray-300 focus:outline-hidden focus:border-rose-400"
               // biome-ignore lint/a11y/noAutofocus: auto focus is intentional for inline editing
               autoFocus
               data-testid={`title-input-${image.id}`}
@@ -150,7 +150,7 @@ export function ImageCard({
               value={image.title}
               readOnly
               onClick={() => setIsEditing(true)}
-              className="flex-1 px-2 py-1 text-sm font-medium text-gray-700 truncate bg-gray-50 rounded border border-gray-200 cursor-pointer hover:border-gray-300 hover:bg-white"
+              className="flex-1 px-2 py-1 text-sm font-medium text-gray-700 truncate bg-gray-50 rounded-xs border border-gray-200 cursor-pointer hover:border-gray-300 hover:bg-white"
               title="Click to edit"
               data-testid={`title-${image.id}`}
             />

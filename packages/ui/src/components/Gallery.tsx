@@ -95,7 +95,7 @@ export function Gallery({
 
   return (
     <div
-      className="px-4 py-10 mx-auto max-w-6xl"
+      className="@container px-4 py-10 mx-auto max-w-6xl"
       data-testid="gallery"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -132,7 +132,7 @@ export function Gallery({
         </div>
       ) : (
         <div
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-4 @[350px]:grid-cols-2 @[700px]:grid-cols-3"
           data-testid="image-grid"
         >
           {images.map((image) => (

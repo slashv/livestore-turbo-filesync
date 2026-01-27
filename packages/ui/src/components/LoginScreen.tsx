@@ -73,7 +73,7 @@ export function LoginScreen({ auth, headerContent }: LoginScreenProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -90,7 +90,7 @@ export function LoginScreen({ auth, headerContent }: LoginScreenProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                 required
               />
             </div>
@@ -106,7 +106,7 @@ export function LoginScreen({ auth, headerContent }: LoginScreenProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={mode === 'register' ? 'Min 6 characters' : 'Your password'}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                 required
                 minLength={mode === 'register' ? 6 : undefined}
               />

@@ -41,9 +41,9 @@ export function ConnectionStatus({ className = '' }: ConnectionStatusProps) {
         aria-checked={isSyncEnabled}
         onClick={toggle}
         className={`
-          relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full
+          relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full
           border-2 border-transparent transition-colors duration-200 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2
+          focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:ring-offset-2
           ${isSyncEnabled ? 'bg-rose-600' : 'bg-gray-200'}
         `}
         data-testid="connection-toggle"
