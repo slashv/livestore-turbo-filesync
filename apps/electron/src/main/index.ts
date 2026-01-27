@@ -82,17 +82,24 @@ function setupAutoUpdater() {
 // Window creation
 // =============================================================================
 function createWindow() {
-  // Intercept requests to add Origin header for auth requests (file:// has no origin)
-  // This is needed for CORS validation on the server
+  // Electron uses bearer token auth (not cookies).
+  // We still need to set an Origin header for CORS preflight validation,
+  // since file:// origin is null and the server needs a recognized origin.
+  // We also strip any cookies to prevent the server from seeing stale/conflicting
+  // cookie-based sessions — all auth goes through Authorization: Bearer headers.
   session.defaultSession.webRequest.onBeforeSendHeaders(
     { urls: [`${effectiveApiUrl}/*`] },
     (details, callback) => {
+      // Set Origin for CORS
       if (!details.requestHeaders.Origin) {
         details.requestHeaders.Origin = isDev
           ? 'http://localhost:5173'
           : 'https://livestore-filesync-gallery.pages.dev'
       }
-      callback({ requestHeaders: details.requestHeaders })
+      // Remove cookies — Electron auth is bearer-only, cookies would cause
+      // confusing dual-auth where the server may validate the wrong credential
+      const { Cookie: _, ...headersWithoutCookie } = details.requestHeaders
+      callback({ requestHeaders: headersWithoutCookie })
     }
   )
 

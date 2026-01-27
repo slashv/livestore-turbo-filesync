@@ -13,6 +13,12 @@
     "deploy:prod": {
       "cache": false
     },
+    "deploy:local": {
+      "cache": false
+    },
+    "deploy:gh": {
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true

@@ -65,7 +65,7 @@ export function ImageCard({
       >
         <FileSyncImage
           fileId={file.id}
-          size={enableThumbnails ? 'large' : 'full'}
+          size={enableThumbnails ? 'medium' : 'full'}
           className="object-cover w-full h-full"
           alt={image.title}
         >
@@ -139,7 +139,7 @@ export function ImageCard({
                   setIsEditing(false)
                 }
               }}
-              className="flex-1 px-2 py-1 text-sm bg-white rounded-xs border border-gray-300 focus:outline-hidden focus:border-rose-400"
+              className="flex-1 px-2 py-1 text-sm bg-white border border-gray-300 rounded-xs focus:outline-hidden focus:border-rose-400"
               // biome-ignore lint/a11y/noAutofocus: auto focus is intentional for inline editing
               autoFocus
               data-testid={`title-input-${image.id}`}
@@ -150,7 +150,7 @@ export function ImageCard({
               value={image.title}
               readOnly
               onClick={() => setIsEditing(true)}
-              className="flex-1 px-2 py-1 text-sm font-medium text-gray-700 truncate bg-gray-50 rounded-xs border border-gray-200 cursor-pointer hover:border-gray-300 hover:bg-white"
+              className="flex-1 px-2 py-1 text-sm font-medium text-gray-700 truncate bg-gray-50 border border-gray-200 cursor-pointer rounded-xs hover:border-gray-300 hover:bg-white"
               title="Click to edit"
               data-testid={`title-${image.id}`}
             />

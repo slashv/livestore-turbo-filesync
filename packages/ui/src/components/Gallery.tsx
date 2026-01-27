@@ -153,7 +153,7 @@ export function Gallery({
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: ephemeral placeholders with no stable identity
                 key={`placeholder-${i}`}
-                className="overflow-hidden rounded-lg border-2 border-rose-300 border-dashed bg-rose-50"
+                className="overflow-hidden bg-rose-50 rounded-lg border-2 border-rose-300 border-dashed"
                 data-testid={`drop-placeholder-${i}`}
               >
                 <div className="flex justify-center items-center w-full bg-rose-50 aspect-square">

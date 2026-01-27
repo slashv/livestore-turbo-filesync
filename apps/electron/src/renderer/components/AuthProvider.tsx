@@ -1,10 +1,9 @@
 import type { AuthContextType, User } from '@repo/ui'
 import { type ReactNode, createContext, useContext, useEffect, useState } from 'react'
-import { authClient, clearToken } from '~/lib/auth-client'
+import { authClient, clearToken, getToken } from '~/lib/auth-client'
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-const TOKEN_KEY = 'livestore-auth-token'
 const USER_KEY = 'livestore-auth-user'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -14,42 +13,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
   const [isLoading, setIsLoading] = useState(true)
 
-  // Verify session on mount
+  // Verify session on mount using bearer token
   useEffect(() => {
     const verifySession = async () => {
-      const token = localStorage.getItem(TOKEN_KEY)
+      const token = getToken()
       if (!token) {
         setIsLoading(false)
         return
       }
 
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL ?? 'http://localhost:8787'}/api/auth/get-session`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
+        // Use the auth client's getSession which automatically includes the bearer token
+        const { data } = await authClient.getSession()
 
-        if (response.ok) {
-          const data = await response.json()
-          if (data.user) {
-            setUser(data.user)
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user))
-          } else {
-            // Invalid session
-            localStorage.removeItem(TOKEN_KEY)
-            localStorage.removeItem(USER_KEY)
-            setUser(null)
-          }
+        if (data?.user) {
+          setUser(data.user)
+          localStorage.setItem(USER_KEY, JSON.stringify(data.user))
         } else {
-          // Session invalid
-          localStorage.removeItem(TOKEN_KEY)
+          // Invalid session — clear stale token
+          clearToken()
           localStorage.removeItem(USER_KEY)
           setUser(null)
         }
       } catch {
-        // Network error - keep existing user if available
+        // Network error — keep existing user if available
       }
       setIsLoading(false)
     }
@@ -64,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: { message: result.error.message ?? 'Sign in failed' } }
     }
 
-    // On success, the token is saved by customFetch, now save user
+    // On success, the bearer token is saved by auth-client's onSuccess handler
     if (result.data?.user) {
       setUser(result.data.user)
       localStorage.setItem(USER_KEY, JSON.stringify(result.data.user))
@@ -80,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: { message: result.error.message ?? 'Sign up failed' } }
     }
 
-    // On success, the token is saved by customFetch, now save user
+    // On success, the bearer token is saved by auth-client's onSuccess handler
     if (result.data?.user) {
       setUser(result.data.user)
       localStorage.setItem(USER_KEY, JSON.stringify(result.data.user))

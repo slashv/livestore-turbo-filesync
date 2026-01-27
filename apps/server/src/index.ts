@@ -55,6 +55,7 @@ app.use(
     credentials: true,
     allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    exposeHeaders: ['set-auth-token'],
   })
 )
 

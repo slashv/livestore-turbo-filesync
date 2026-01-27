@@ -92,8 +92,8 @@ pnpm deploy:prod
 | `pnpm deploy:server:prod` | Server to production worker + prod D1 database |
 | `pnpm deploy:web:preview` | Web to unique preview URL (uses dev server) |
 | `pnpm deploy:web:prod` | Web to production URL |
-| `pnpm deploy:electron:preview` | Electron local build (no publish) |
-| `pnpm deploy:electron:prod` | Electron to GitHub Releases |
+| `pnpm deploy:electron:local` | Electron local build (no publish) |
+| `pnpm deploy:electron:gh` | Electron to GitHub Releases |
 | `pnpm deploy:mobile:preview` | Mobile EAS preview profile (internal distribution) |
 | `pnpm deploy:mobile:prod` | Mobile EAS production profile (app stores) |
 
@@ -199,18 +199,20 @@ VITE_SYNC_URL=https://livestore-app-server.contact-106.workers.dev/sync
 
 ## Electron Deployment
 
-### Preview (Local Build)
+The Electron app uses `.env.production` for server URLs (same as web), loaded automatically via `--mode production`.
+
+### Local Build
 
 ```bash
-pnpm deploy:electron:preview
+pnpm deploy:electron:local
 ```
 
-Builds the app locally without publishing. Output in `apps/electron/release/`.
+Builds the app with production server URLs and packages it locally. Output in `apps/electron/release/`.
 
-### Production (GitHub Releases)
+### GitHub Releases
 
 ```bash
-GH_TOKEN=your_token pnpm deploy:electron:prod
+GH_TOKEN=your_token pnpm deploy:electron:gh
 ```
 
 Builds and publishes to GitHub Releases with auto-update support.

@@ -9,4 +9,13 @@
  * - No lossless WebP support
  * - Strips all metadata
  */
-import '@livestore-filesync/image/thumbnails/workers/canvas.worker'
+// Import and re-export the canvas worker setup
+// This file is used as a worker entry point via Vite's ?worker import
+import { createCanvasProcessor } from '@livestore-filesync/image/processor'
+import { setupThumbnailWorker } from '@livestore-filesync/image/thumbnails'
+
+console.log('[ThumbnailWorker] Worker script starting...')
+const processor = createCanvasProcessor()
+console.log('[ThumbnailWorker] Canvas processor created:', processor)
+setupThumbnailWorker(processor)
+console.log('[ThumbnailWorker] Worker setup complete, listening for messages')

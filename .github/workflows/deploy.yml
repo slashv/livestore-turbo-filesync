@@ -124,7 +124,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build and publish Electron app
-        run: pnpm --filter @repo/electron run deploy:${{ matrix.platform }}
+        run: pnpm --filter @repo/electron run deploy:gh:${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS code signing (optional - add when you have certificates)
