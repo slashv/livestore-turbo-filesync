@@ -1,7 +1,7 @@
 import { saveFile } from '@livestore-filesync/core'
 import { queryDb } from '@livestore/livestore'
 import { events, tables } from '@repo/store'
-import { type ReactNode, useRef } from 'react'
+import { type ReactNode, useCallback, useRef, useState } from 'react'
 import { useAppStore } from '../AppStoreProvider'
 import { ImageCard } from './ImageCard'
 
@@ -23,30 +23,85 @@ export function Gallery({
 }: GalleryProps) {
   const store = useAppStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  const dragCounter = useRef(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragFileCount, setDragFileCount] = useState(0)
 
   const images = store.useQuery(imagesQuery)
+
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      for (const file of files) {
+        try {
+          const result = await saveFile(file)
+          const imageId = crypto.randomUUID()
+          const title = file.name.replace(/\.[^/.]+$/, '')
+          store.commit(
+            events.imageCreated({
+              id: imageId,
+              title,
+              fileId: result.fileId,
+              createdAt: new Date(),
+            })
+          )
+        } catch (error) {
+          console.error('[Gallery] Error uploading file:', error)
+        }
+      }
+    },
+    [store]
+  )
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files?.length) return
-
-    for (const file of Array.from(files)) {
-      try {
-        const result = await saveFile(file)
-        const imageId = crypto.randomUUID()
-        const title = file.name.replace(/\.[^/.]+$/, '')
-        store.commit(
-          events.imageCreated({ id: imageId, title, fileId: result.fileId, createdAt: new Date() })
-        )
-      } catch (error) {
-        console.error('[Gallery] Error uploading file:', error)
-      }
-    }
+    await uploadFiles(Array.from(files))
     if (inputRef.current) inputRef.current.value = ''
   }
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current++
+    if (e.dataTransfer.items) {
+      setDragFileCount(e.dataTransfer.items.length)
+    }
+    setIsDragging(true)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current--
+    if (dragCounter.current === 0) {
+      setIsDragging(false)
+      setDragFileCount(0)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current = 0
+    setIsDragging(false)
+    setDragFileCount(0)
+
+    const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'))
+    if (files.length > 0) {
+      await uploadFiles(files)
+    }
+  }
+
   return (
-    <div className="px-4 py-10 mx-auto max-w-6xl" data-testid="gallery">
+    <div
+      className="px-4 py-10 mx-auto max-w-6xl"
+      data-testid="gallery"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {headerContent}
 
       <h1 className="mb-8 text-4xl font-thin text-center text-rose-800">gallery</h1>
@@ -71,7 +126,7 @@ export function Gallery({
         </button>
       </div>
 
-      {images.length === 0 ? (
+      {images.length === 0 && !isDragging ? (
         <div className="py-20 text-center text-gray-400" data-testid="empty-state">
           <p>No images yet. Upload some to get started!</p>
         </div>
@@ -93,6 +148,19 @@ export function Gallery({
               }
             />
           ))}
+          {isDragging &&
+            Array.from({ length: dragFileCount }, (_, i) => (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: ephemeral placeholders with no stable identity
+                key={`placeholder-${i}`}
+                className="overflow-hidden rounded-lg border-2 border-rose-300 border-dashed bg-rose-50"
+                data-testid={`drop-placeholder-${i}`}
+              >
+                <div className="flex justify-center items-center w-full bg-rose-50 aspect-square">
+                  <span className="text-sm text-rose-400">Drop to upload</span>
+                </div>
+              </div>
+            ))}
         </div>
       )}
 
