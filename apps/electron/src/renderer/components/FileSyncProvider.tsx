@@ -1,5 +1,5 @@
 import { initFileSync } from '@livestore-filesync/core'
-import { createImagePreprocessor } from '@livestore-filesync/image/preprocessor'
+import { createCanvasImagePreprocessor } from '@livestore-filesync/image/preprocessor/canvas'
 import { initThumbnails } from '@livestore-filesync/image/thumbnails'
 import { layer as opfsLayer } from '@livestore-filesync/opfs'
 import { tables } from '@repo/store'
@@ -58,11 +58,10 @@ function FileSyncProviderInner({ children }: FileSyncProviderProps) {
         maxConcurrentUploads: 5,
         maxConcurrentDownloads: 5,
         preprocessors: {
-          'image/*': createImagePreprocessor({
+          'image/*': createCanvasImagePreprocessor({
             maxDimension: 1500,
             quality: 85,
             format: 'jpeg',
-            processor: 'canvas',
           }),
         },
       },

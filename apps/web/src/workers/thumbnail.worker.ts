@@ -12,7 +12,7 @@
 
 // Import and re-export the canvas worker setup
 // This file is used as a worker entry point via Vite's ?worker import
-import { createCanvasProcessor } from '@livestore-filesync/image/processor'
+import { createCanvasProcessor } from '@livestore-filesync/image/processor/canvas'
 import { setupThumbnailWorker } from '@livestore-filesync/image/thumbnails'
 
 setupThumbnailWorker(createCanvasProcessor())
