@@ -2,9 +2,19 @@ packages:
   - "apps/*"
   - "packages/*"
   - "libs/livestore-filesync/packages/*"
-  - "libs/livestore/packages/@livestore/*"
 
 catalog:
+  # LiveStore packages (from npm pre-release)
+  "@livestore/adapter-node": 0.4.0-dev.22
+  "@livestore/adapter-web": 0.4.0-dev.22
+  "@livestore/livestore": 0.4.0-dev.22
+  "@livestore/peer-deps": 0.4.0-dev.22
+  "@livestore/react": 0.4.0-dev.22
+  "@livestore/sync-cf": 0.4.0-dev.22
+  "@livestore/utils": 0.4.0-dev.22
+  "@livestore/wa-sqlite": 0.4.0-dev.22
+  "@livestore/devtools-vite": 0.4.0-dev.22
+
   # Type packages (from livestore)
   "@types/react": 19.2.7
   "@types/react-dom": 19.2.3

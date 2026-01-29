@@ -2,7 +2,3 @@
 	path = libs/livestore-filesync
 	url = https://github.com/slashv/livestore-filesync.git
 	branch = dev
-[submodule "libs/livestore"]
-	path = libs/livestore
-	url = https://github.com/livestorejs/livestore.git
-	branch = dev

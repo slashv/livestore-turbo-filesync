@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@livestore/livestore": "workspace:*",
-    "@livestore/peer-deps": "workspace:*",
+    "@livestore/livestore": "0.4.0-dev.22",
+    "@livestore/peer-deps": "0.4.0-dev.22",
     "@livestore-filesync/core": "workspace:*",
     "@livestore-filesync/image": "workspace:*",
     "effect": "catalog:"
